@@ -1,0 +1,14 @@
+[gd_scene load_steps=2 format=3 uid="uid://djmp5mfxtxpap"]
+
+[ext_resource type="Script" path="res://工程素材/场景/测试场景/视差地图测试/视差测试专用地图生成脚本.cs" id="1_4b2hd"]
+
+[node name="大地图生成" type="Node2D"]
+texture_filter = 1
+
+[node name="Camera2D" type="Camera2D" parent="."]
+
+[node name="大地图" type="Node2D" parent="."]
+position = Vector2(600, 0)
+
+[node name="地图生成器" type="Node2D" parent="大地图"]
+script = ExtResource("1_4b2hd")

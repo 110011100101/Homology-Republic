@@ -1,0 +1,37 @@
+[gd_scene load_steps=5 format=3 uid="uid://c4840sposnobh"]
+
+[ext_resource type="Script" path="res://工程素材/场景/测试场景/视差地图测试/视差测试专用地图生成脚本.cs" id="1_j7diu"]
+[ext_resource type="Script" path="res://工程素材/场景/测试场景/视差地图测试/视差地图相机专用脚本.cs" id="2_ykcg1"]
+[ext_resource type="FontFile" uid="uid://cr8tijpmqscfm" path="res://工程素材/字体/凤凰点阵体/加粗.ttf" id="3_iam6w"]
+[ext_resource type="Texture2D" uid="uid://bjbjw73kbjpvf" path="res://工程素材/美术素材包/Tile/Sprite-0001.png" id="4_rywyr"]
+
+[node name="#00001 视差地图测试场景" type="Node2D"]
+texture_filter = 1
+
+[node name="地图生成器" type="Node2D" parent="."]
+script = ExtResource("1_j7diu")
+
+[node name="相机高度" type="Label" parent="."]
+offset_left = 256.0
+offset_top = -419.0
+offset_right = 706.0
+offset_bottom = -355.0
+theme_override_fonts/font = ExtResource("3_iam6w")
+theme_override_font_sizes/font_size = 25
+text = "这里显示相机高度"
+
+[node name="参数监控" type="Label" parent="."]
+offset_left = 256.0
+offset_top = -203.0
+offset_right = 675.0
+offset_bottom = 300.0
+theme_override_fonts/font = ExtResource("3_iam6w")
+theme_override_font_sizes/font_size = 25
+text = "这里放各项参数"
+
+[node name="Camera2D" type="Camera2D" parent="."]
+process_callback = 0
+script = ExtResource("2_ykcg1")
+
+[node name="Sprite2D" type="Sprite2D" parent="Camera2D"]
+texture = ExtResource("4_rywyr")
