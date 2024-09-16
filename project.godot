@@ -31,6 +31,14 @@ window/physics_interpolation=true
 
 project/assembly_name="A游戏开发项目"
 
+[file_customization]
+
+folder_colors={
+"res://制作日志/": "blue",
+"res://制作素材包/": "pink",
+"res://工程素材/": "yellow"
+}
+
 [gui]
 
 fonts/dynamic_fonts/use_oversampling=false

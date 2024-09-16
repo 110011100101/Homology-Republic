@@ -1,0 +1,4 @@
+[gd_scene format=3 uid="uid://b6t04nnkl1vti"]
+
+[node name="游玩场景" type="Node2D"]
+texture_filter = 1

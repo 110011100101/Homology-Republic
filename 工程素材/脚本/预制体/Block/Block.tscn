@@ -16,6 +16,7 @@ script = ExtResource("2_niut7")
 script = ExtResource("3_ds4jk")
 
 [node name="瓦片坐标" type="Label" parent="."]
+visible = false
 offset_left = -26.0
 offset_top = -4.0
 offset_right = 78.0

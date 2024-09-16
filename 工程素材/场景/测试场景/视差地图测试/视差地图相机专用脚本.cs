@@ -101,6 +101,7 @@ public partial class 视差地图相机专用脚本 : Camera2D
 				if (Input.IsMouseButtonPressed(MouseButton.Middle))
 				{
 					var mouseDelta = eventMouseMotion.Relative;
+
 					Translate(new Vector2(-mouseDelta.X, -mouseDelta.Y));
 
 					// 更新地图偏移量
@@ -216,7 +217,7 @@ public partial class 视差地图相机专用脚本 : Camera2D
 				break;
 			}
 
-			Level.Position = new Vector2(CameraPosition.X * -(Level.Scale.X - 1), CameraPosition.Y * -(Level.Scale.Y - 1)); // L * 坐标值 / 缩放值
+			Level.Position = new Vector2(CameraPosition.X * -(Level.Scale.X - 1), CameraPosition.Y * -(Level.Scale.Y - 1)).Round(); // L * 坐标值 / 缩放值
 			// GD.Print($"\nLevelName{Level.Name}\nlScale{Level.Scale}\nPosition{Level.Position}");
 			// GD.Print($"算式:\n\t{Level.Position.X}(X) = 64 (L) * {CameraPosition.X} (摄像机X坐标) * {Level.Scale.X} (缩放值)\n");
 		}
