@@ -24,18 +24,19 @@ public partial class 工人行为脚本 : Node2D
 			{
 				workerStatus = WorkerStatus.Idle;
 			}
+			
+			switch (workerStatus)
+			{
+				case WorkerStatus.Idle:
+					Idle();
+					break;
+				case WorkerStatus.Croping:
+					Crop();
+					break;
+			}
 		}
 
 		// 工人状态机
-		switch (workerStatus)
-		{
-			case WorkerStatus.Idle:
-				Idle();
-				break;
-			case WorkerStatus.Croping:
-				Crop();
-				break;
-		}
 	}
 
 	private void Idle()
@@ -56,4 +57,6 @@ public partial class 工人行为脚本 : Node2D
 		// 具体行为
 		
 	}
+
+	
 }

@@ -3,20 +3,16 @@ using System;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-//
-// 视差测试专用地图生成脚本
-// 因为是测试所以没能控制每一个block的材质，实际上
-// 
-
 public partial class 视差测试专用地图生成脚本 : Node2D
 {
+
 	public override void _Ready()
 	{
-		// FIXME: 卡烂了，需要优化
-		// PS: 必须从零开始生成,我不想写适配的索引,太麻烦,而且也用不上
-		for(int i = 0; i <= 10; i++)
-		{
-			LoopMapCreater(6, i, null, new TestTile());
+		for (int X = 0; X < 10; X++)
+		for (int Y = 0; Y < 10; Y++)
+		for (int Z = 0; Z < 10; Z++){
+			GD.Print($"正在生成{X},{Y},{Z}");
+			MapCreater(new Vector3(X, Y, Z), new TestTile());
 		}
 	}
 
@@ -25,104 +21,89 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 	}
 
 	// 循环生成地图
-	// 参数:地图边长, 目标高度, 预设材质 = null
-	public void LoopMapCreater(int mapSize, int targetHeight, GameMaterial GroundMaterial = null, GameMaterial FloorMaterial = null)
+	public void MapCreater(Vector3 blockPosition, GameMaterial GroundMaterial = null, GameMaterial FloorMaterial = null)
 	{
-		Node2D HeightNode; // 高度层
-		Block block; // 临时储存地块方便访问
+		string LevelName = $"{blockPosition.Z}";
+		string BlockName = $"{blockPosition.X},{blockPosition.Y}";
 
-		//////////////////////////////////////////////////////////////
-		// 实现思路：
-		//
-		// -- 步骤: 预备 --
-		// 扫描高度树
-		// 如果没有目标高度的父节点，则<新建>一个然后赋值给HeightNode
-		// 如果有则直接赋值给HeightNode
-		// 
-		// -- 步骤: 生成 --
-		// 根据边长<建立>二维循环
-		// 循环内:
-		// 		扫描本层树, 检查是否目标位置已有Block
-		// 		没有则, <初始化>一个地块, 补全地块所需要的参数
-		//		加入本层并赋值给block
-		// 		-- 更改材质 --
-		// 		调用block的更改材质参数给地块改材质, Floor 和 Ground 都要改
-		// 
-		// -- 步骤: 结束 --
-		// 结束
-		//////////////////////////////////////////////////////////////
-
-		//
-		//
-		//
-		// -- 步骤: 预备 --
-		// 扫描高度树
-		// 如果没有目标高度的父节点，则<新建>一个然后赋值给HeightNode
-		// 如果有则直接赋值给HeightNode
-		if (IsNodeInAsChild(this, $"{targetHeight}") && targetHeight >= 0 && targetHeight <= 500)
+		// 层不存在
+		if (!HasNode($"./{LevelName}"))
 		{
-			HeightNode = this.GetNode<Node2D>($"{targetHeight}");
+			GD.Print("开始生成层");
+			AddIndex(this, new Node2D() { Name = LevelName });
+		}
+
+		// block不存在
+		if (!HasNode($"./{LevelName}/{BlockName}"))
+		{
+			Block block; // 预制体
+			block = ((PackedScene)GD.Load("res://工程素材/脚本/预制体/Block/Block.tscn")).Instantiate<Block>();
+			GD.Print("开始生成block");
+			GetNode<Node2D>($"{LevelName}").AddChild(block);
+			block.Position = 坐标转换器.ToRealPosition(blockPosition); // 位置
+			block.Name = BlockName;
+			block.ChangeGroundMaterial(GroundMaterial);
+			block.ChangeFloorMaterial(FloorMaterial);
+
+		}
+	}
+
+	/// <summary>
+	/// 检查子节点是否存在于父节点中
+	/// </summary>
+	/// <param name="Parent">父节点</param>
+	/// <param name="Child">子节点</param>
+	// public bool IsNodeInAsChild(Node2D Parent, string Child)
+	// {
+	// 	// 尝试访问子节点
+	// 	// FIXME: 此方法报错后并未执行生成层的代码
+	// 	try
+	// 	{
+	// 		Parent.GetNode<Node2D>(Child);
+			
+	// 		GD.Print("IsNodeInAsChild(): return true"); 
+	// 		return true;
+	// 	}
+	// 	catch (Exception e)
+	// 	{
+	// 		GD.Print("Error:" + e.Message);
+
+	// 		GD.Print("IsNodeInAsChild(): return false");
+	// 		return false;
+	// 	}
+	// }
+
+	/// <summary>
+	/// 向指定索引添加节点
+	/// <para>特殊情况: 不能传入名字不是数字的节点,特别是不要有符号</para>
+	/// </summary>
+	/// <param name="Parent">父节点</param>
+	/// <param name="LevelName">子节点名称</param>
+	/// <param name="AutoIndexMode">自动生成索引模式</param>
+	public void AddIndex(Node2D Parent, Node2D Child, bool AutoIndexMode = true, int Index = 0)
+	{
+		if (AutoIndexMode)
+		{
+			// 特殊情况处理
+			if(Parent.GetChildCount() == 0)
+			{
+				Parent.AddChild(Child);
+			}
+			else if (HasNode($"{Parent.GetPath()}/{int.Parse(Child.Name) - 1}"))
+			{
+				AddChild(Child);
+				MoveChild(Child, Parent.GetNode<Node2D>($"{int.Parse(Child.Name)}").GetIndex() + 1); // 升序
+			}
+			else
+			{
+				AddChild(Child);
+				MoveChild(Child, 0);
+			}
 		}
 		else
 		{
-			HeightNode = new Node2D();
-			HeightNode.Name = $"{targetHeight}";
-			this.AddChild(HeightNode);
+			Parent.AddChild(Child);
+			MoveChild(Child, Index);
 		}
-		//
-		// -- 步骤: 生成 --
-		// 根据边长<建立>二维循环
-		// 循环内:
-		// 		扫描本层树, 检查是否目标位置已有Block
-		// 		没有则, <初始化>一个地块, 补全地块所需要的参数
-		//		加入本层并赋值给block
-		// 		-- 更改材质 --
-		// 		调用block的更改材质参数给地块改材质, Floor 和 Ground 都要改
-		for (int x = -mapSize; x < mapSize; x++)
-			for (int y = -mapSize; y < mapSize; y++)
-			{
-				if (!IsNodeInAsChild(HeightNode, $"({x},{y},{targetHeight})") && (!(x == 0 && y == 0 && targetHeight == 10)))
-				{
-					// 加载场景, 然后用PackedScene.Instantiate()生成
-					// FIXME: 这里其实不能直接放路径, 但是是测试, 就算了
-					block = ((PackedScene)GD.Load("res://工程素材/脚本/预制体/Block/Block.tscn")).Instantiate<Block>();
-					// 补全地块所需要的参数:
-					// 名称--
-					block.Name = $"({x},{y},{targetHeight})";
-
-					// 瓦片坐标
-					block.GetNode<Label>("瓦片坐标").Text = block.Name;
-
-					// 矩阵位置--
-					block.BlockPosition = new Vector3(x, y, targetHeight);
-					// 实际位置--
-					block.Position = 坐标转换器.ToRealPosition(block.BlockPosition);
-
-
-					// 加入本层
-					// TODO: 这里需要决定顺序
-					HeightNode.AddChild(block);
-
-					// GD.Print($"floor:{block.floor.Name}\nGround:{block.ground.Name}"); // 用来检测是否正确挂载了子节点
-					// 更改材质--
-					block.ChangeGroundMaterial(GroundMaterial);
-					block.ChangeFloorMaterial(FloorMaterial);
-				}
-			}
-		// -- 步骤: 结束 --
-		// 结束
-	}
-
-	public bool IsNodeInAsChild(Node2D fatherNode, string ChildNodeToFind)
-	{
-		// 比对每一个子节点
-		foreach (Node2D child in this.GetChildren())
-		{
-			if ($"{child.Name}" == ChildNodeToFind)
-			{
-				return true;
-			}
-		}
-		return false;
 	}
 }

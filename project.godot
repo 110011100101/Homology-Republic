@@ -45,6 +45,7 @@ fonts/dynamic_fonts/use_oversampling=false
 theme/default_font_antialiasing=0
 theme/default_font_hinting=0
 theme/default_font_subpixel_positioning=0
+theme/lcd_subpixel_layout=0
 
 [physics]
 

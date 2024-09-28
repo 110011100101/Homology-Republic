@@ -22,9 +22,9 @@ public partial class 视差地图相机专用脚本 : Camera2D
 	{
 		targetCamerHight = originalCamerHight;
 		cameraHight = originalCamerHight;
-		地图生成器 = GetParent().GetNode<Node2D>("地图生成器");
 		ChangeMapScale(cameraHight, 地图生成器, 1);
 		ChangeMapOffset(this.Position, cameraHight);
+		地图生成器 = GetParent().GetNode<Node2D>("地图生成器");
 		相机高度显示器 = GetParent().GetNode<Label>("相机高度");
 		各项参数监控 = GetParent().GetNode<Label>("参数监控");
 	}
@@ -154,7 +154,7 @@ public partial class 视差地图相机专用脚本 : Camera2D
 			// 缩放
 			float LevelDiff = baseHeight - float.Parse(Level.Name);
 			float ScaleValue = (float)Math.Pow(0.5, LevelDiff); // 更改此处的值来调整缩放大小
-			Level.Scale = new Vector2(ScaleValue, ScaleValue); //进行缩放
+			Level.Scale = new Vector2(ScaleValue, ScaleValue); // 进行缩放
 			
 			// 透明度
 			if (LevelDiff < 0 && LevelDiff > -1)
