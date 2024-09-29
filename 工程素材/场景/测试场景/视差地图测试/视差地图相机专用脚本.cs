@@ -22,11 +22,11 @@ public partial class 视差地图相机专用脚本 : Camera2D
 	{
 		targetCamerHight = originalCamerHight;
 		cameraHight = originalCamerHight;
-		ChangeMapScale(cameraHight, 地图生成器, 1);
-		ChangeMapOffset(this.Position, cameraHight);
 		地图生成器 = GetParent().GetNode<Node2D>("地图生成器");
 		相机高度显示器 = GetParent().GetNode<Label>("相机高度");
 		各项参数监控 = GetParent().GetNode<Label>("参数监控");
+		ChangeMapOffset(this.Position, cameraHight);
+		ChangeMapScale(cameraHight, 地图生成器, 1);
 	}
 
 	public override void _Process(double delta)

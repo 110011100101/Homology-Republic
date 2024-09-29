@@ -8,10 +8,10 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 
 	public override void _Ready()
 	{
-		for (int X = 0; X < 10; X++)
-		for (int Y = 0; Y < 10; Y++)
-		for (int Z = 0; Z < 10; Z++){
-			GD.Print($"正在生成{X},{Y},{Z}");
+		for (int X = -10; X < 10; X++)
+		for (int Y = -10; Y < 10; Y++)
+		for (int Z = -10; Z < 100; Z++){
+			// GD.Print($"正在生成{X},{Y},{Z}");
 			MapCreater(new Vector3(X, Y, Z), new TestTile());
 		}
 	}
@@ -29,7 +29,7 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 		// 层不存在
 		if (!HasNode($"./{LevelName}"))
 		{
-			GD.Print("开始生成层");
+			// GD.Print("开始生成层");
 			AddIndex(this, new Node2D() { Name = LevelName });
 		}
 
@@ -38,7 +38,7 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 		{
 			Block block; // 预制体
 			block = ((PackedScene)GD.Load("res://工程素材/脚本/预制体/Block/Block.tscn")).Instantiate<Block>();
-			GD.Print("开始生成block");
+			// GD.Print("开始生成block");
 			GetNode<Node2D>($"{LevelName}").AddChild(block);
 			block.Position = 坐标转换器.ToRealPosition(blockPosition); // 位置
 			block.Name = BlockName;
