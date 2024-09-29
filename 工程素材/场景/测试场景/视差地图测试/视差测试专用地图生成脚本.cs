@@ -8,9 +8,9 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 
 	public override void _Ready()
 	{
-		for (int X = -10; X < 10; X++)
-		for (int Y = -10; Y < 10; Y++)
-		for (int Z = -10; Z < 100; Z++){
+		for (int X = -6; X < 6; X++)
+		for (int Y = -6; Y < 6; Y++)
+		for (int Z = 0; Z < 10; Z++){
 			// GD.Print($"正在生成{X},{Y},{Z}");
 			MapCreater(new Vector3(X, Y, Z), new TestTile());
 		}
@@ -56,7 +56,6 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 	// public bool IsNodeInAsChild(Node2D Parent, string Child)
 	// {
 	// 	// 尝试访问子节点
-	// 	// FIXME: 此方法报错后并未执行生成层的代码
 	// 	try
 	// 	{
 	// 		Parent.GetNode<Node2D>(Child);

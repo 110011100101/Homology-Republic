@@ -20,25 +20,30 @@ public partial class 视差地图相机专用脚本 : Camera2D
 
 	public override void _Ready()
 	{
+		// 初始化参数
 		targetCamerHight = originalCamerHight;
 		cameraHight = originalCamerHight;
+
+		// 获取节点
 		地图生成器 = GetParent().GetNode<Node2D>("地图生成器");
 		相机高度显示器 = GetParent().GetNode<Label>("相机高度");
 		各项参数监控 = GetParent().GetNode<Label>("参数监控");
+
+		// 初始化地图
 		ChangeMapOffset(this.Position, cameraHight);
-		ChangeMapScale(cameraHight, 地图生成器, 1);
+		ChangeMapScale(cameraHight, 地图生成器, false);
 	}
 
 	public override void _Process(double delta)
 	{
 		if (Math.Abs(targetCamerHight - cameraHight) < 0.1 && intStep != 0)
 		{
-			GD.Print($"插值完成, cameraheight = {cameraHight}");
+			// 初始化值
 			originalCamerHight = targetCamerHight;
 			cameraHight = targetCamerHight;
 			intStep = 0;
 
-			// 这里应该最后再规整一下每一层,也就是收个尾,将所有层直接放到目标高度
+			// 归拢层
 			ChangeMapScale(targetCamerHight, 地图生成器);
 			ChangeMapOffset(this.Position, targetCamerHight);
 
@@ -46,7 +51,6 @@ public partial class 视差地图相机专用脚本 : Camera2D
 		}
 		else if (cameraHight != targetCamerHight)
 		{
-			GD.Print($"插值将cameraheight靠近目标height:{intStep}");
 			// 插值将cameraheight靠近目标height
 			cameraHight += intStep;
 
@@ -58,31 +62,25 @@ public partial class 视差地图相机专用脚本 : Camera2D
 		}
 
 		if (cd != 0)
-		{
 			cd = 0;
-		}
 	}
 
-	// 输入事件统一放在這
-	// 升降相机,当滚轮滚动时, 对应加减camerHight
+	// 输入事件
 	public override void _Input(InputEvent @event)
 	{
-		// 处理滚轮事件
-		// 我开放的
 		if (@event is InputEventMouseButton mouseButton && cd == 0)
 		{
-			// Up -> +Level
+			// MouseUp -> Level up
 			if (mouseButton.ButtonIndex == MouseButton.WheelUp && targetCamerHight < 500)
-			{
 				targetCamerHight++;
-			}
-			// Down -> -Level
+
+			// MouseDown -> Level down
 			if (mouseButton.ButtonIndex == MouseButton.WheelDown && targetCamerHight > 0)
-			{
 				targetCamerHight--;
-			}
+
 			cd = 1;
 
+			// [监测]相机参数
 			相机高度显示器.Text = $"相机高度: {cameraHight}\n目标高度: {targetCamerHight}\n步长: {intStep}";
 
 			// 计算步长
@@ -94,33 +92,36 @@ public partial class 视差地图相机专用脚本 : Camera2D
 
 		Vector2 _lastMousePos;
 		// 鼠标中键拖动相机
-		if (Input.IsMouseButtonPressed(MouseButton.Middle))
+		if (Input.IsMouseButtonPressed(MouseButton.Middle) && @event is InputEventMouseMotion eventMouseMotion)
 		{
-			if (@event is InputEventMouseMotion eventMouseMotion)
-			{
-				if (Input.IsMouseButtonPressed(MouseButton.Middle))
-				{
-					var mouseDelta = eventMouseMotion.Relative;
+			var mouseDelta = eventMouseMotion.Relative;
 
-					Translate(new Vector2(-mouseDelta.X, -mouseDelta.Y));
+			// 平移相机
+			Translate(new Vector2(-mouseDelta.X, -mouseDelta.Y));
 
-					// 更新地图偏移量
-					ChangeMapOffset(this.Position, cameraHight);
-				}
-				_lastMousePos = eventMouseMotion.Position;
-			}
+			// 更新地图偏移量
+			ChangeMapOffset(this.Position, cameraHight);
+			
+			_lastMousePos = eventMouseMotion.Position;
 		}
 	}
 
-
-	// 改变地图缩放的函数
-	// 大于基准高度的不显示，小于基准高度的缩小
-	public void ChangeMapScale(float baseHeight, Node2D 地图生成器,int Mode = 0)
+	/// <summary>
+	/// 地图缩放
+	/// </summary>
+	/// <param name="baseHeight">基准高度<para>
+	/// 此高度基本上是相机的高度, 基准高度的意义在于, 通过改变基准高度像电梯一样切换层级
+	/// </para></param>
+	/// <param name="地图生成器">因为此脚本挂载到相机节点, 所以需要获取地图生成器来直接操作缩放, 不然又要用信号传来传去的贼麻烦还不好维护</param>
+	/// <param name="Mode">此参数提供了两种模式
+	/// <para>0: 默认模式, 会根据相机高度自动缩放</para>
+	/// <para>1: 初始化模式, 会缩放所有层</para></param>
+	public void ChangeMapScale(float baseHeight, Node2D 地图生成器,bool Mode = true)
 	{
 		int beginHeight;
 		int endHeight;
 		
-		if (Mode == 0)
+		if (Mode)
 		{
 			if (baseHeight < HeightRange)
 			{
@@ -142,14 +143,11 @@ public partial class 视差地图相机专用脚本 : Camera2D
 		for (int i = beginHeight; i <= endHeight; i++)
 		{
 			Node2D Level;
+
 			if (i < 地图生成器.GetChildCount())
-			{
 				Level = 地图生成器.GetChild<Node2D>(i);
-			}
 			else 
-			{
 				break;
-			}
 			
 			// 缩放
 			float LevelDiff = baseHeight - float.Parse(Level.Name);
@@ -158,17 +156,11 @@ public partial class 视差地图相机专用脚本 : Camera2D
 			
 			// 透明度
 			if (LevelDiff < 0 && LevelDiff > -1)
-			{
 				Level.Modulate = new Color(Level.Modulate.R, Level.Modulate.G, Level.Modulate.B, 1 - Math.Abs(LevelDiff));
-			}
 			else if (LevelDiff <= -1 || LevelDiff >= HeightRange)
-			{
 				Level.Modulate = new Color(Level.Modulate.R, Level.Modulate.G, Level.Modulate.B, 0);
-			}
 			else
-			{
 				Level.Modulate = new Color(Level.Modulate.R, Level.Modulate.G, Level.Modulate.B, 1);
-			}
 
 			// 是否可见
 			if (LevelDiff <= -1 || LevelDiff >= HeightRange)
@@ -182,15 +174,20 @@ public partial class 视差地图相机专用脚本 : Camera2D
 		}
 	}
 
-	// 改变地图偏移量
-	// FIXME: 偏移函数需要重新计算参数，高度差大于两层的地图出现了偏移过快的问题
+	/// <summary>
+	/// 地图偏移
+	/// <para>
+	/// <b>注意:</b> 适用范围为 [-1, HeightRange] 通常此范围会从当前的相机高度向上多算一个, 因此从 -1 开始.
+	/// </para>
+	/// <para>
+	/// <b>HeightRange:</b> 定义了参与运算的层数, 也就是往下看能显示多少层, 一般头顶的层虽然不显示, 但是依然参与运算.
+	/// </para>
+	/// </summary>
+	/// <param name="CameraPosition">相机位置</param>
+	/// <param name="baseHeight">基准高度</param>
 	// FIXME: 这里其实可以优化,每次不遍历所有的层,只需要遍历当前相机高度附近的层
 	public void ChangeMapOffset(Vector2 CameraPosition, float baseHeight)
 	{
-		// GD.Print("------------------------\n");
-
-		// 笔记: 范围为 [-1, HeightRange]
-		// 
 		int beginHeight;
 		int endHeight;
 
@@ -208,22 +205,14 @@ public partial class 视差地图相机专用脚本 : Camera2D
 		for (int i = beginHeight; i <= endHeight; i++)
 		{
 			Node2D Level;
+
 			if (i < 地图生成器.GetChildCount())
-			{
 				Level = 地图生成器.GetChild<Node2D>(i);
-			}
 			else 
-			{
 				break;
-			}
 
 			Level.Position = new Vector2(CameraPosition.X * -(Level.Scale.X - 1), CameraPosition.Y * -(Level.Scale.Y - 1)).Round(); // L * 坐标值 / 缩放值
-			// GD.Print($"\nLevelName{Level.Name}\nlScale{Level.Scale}\nPosition{Level.Position}");
-			// GD.Print($"算式:\n\t{Level.Position.X}(X) = 64 (L) * {CameraPosition.X} (摄像机X坐标) * {Level.Scale.X} (缩放值)\n");
 		}
-
-		// GD.Print("\n------------------------");
-
 	}
 }
 
