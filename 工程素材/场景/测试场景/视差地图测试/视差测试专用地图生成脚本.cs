@@ -8,14 +8,26 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 {
 	public List<上下文> Information {get; set;} = new List<上下文>();
 
+	public List<Block> BlocksPrefab {get; set;} = new List<Block>();
+	
+	private Block block; // 预制体
+	private int PrefabQueueNumber = 0; // 预制体队列编号
+
+	[Export] private int prefabCount = 0;
+
+
 	public override void _Ready()
 	{
-		for (int X = -6; X < 6; X++)
-		for (int Y = -6; Y < 6; Y++)
-		for (int Z = 0; Z < 10; Z++){
-			// GD.Print($"正在生成{X},{Y},{Z}");
-			MapCreater(new Vector3(X, Y, Z), new TestTile());
+		for (int i = 0; i < prefabCount; i++)
+			BlocksPrefab.Add(((PackedScene)GD.Load("res://工程素材/脚本/预制体/Block/Block.tscn")).Instantiate<Block>());
+
+		for (int z = 0; z < 1; z++)
+		for (int x = -15; x < 15; x++)
+		for (int y = -15; y < 15; y++)
+		{
+			MapCreater(new Vector3(x, y, z), new TestTile());
 		}
+		
 	}
 
 	public override void _Process(double delta)
@@ -41,15 +53,13 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 		}
 
 		// block不存在
-		// FIXME: 这里没有使用对象池
 		if (!HasNode($"./{LevelName}/{BlockName}"))
 		{
 			上下文 context = Information.Find((上下文 x) => x.position == blockPosition);
 			
 			if (context == null)
 			{
-				Block block; // 预制体
-				block = ((PackedScene)GD.Load("res://工程素材/脚本/预制体/Block/Block.tscn")).Instantiate<Block>();
+				block = BlocksPrefab[PrefabQueueNumber];
 				GetNode<Node2D>($"{LevelName}").AddChild(block);
 				block.Position = 坐标转换器.ToRealPosition(blockPosition); // 位置
 				block.Name = BlockName;
@@ -58,20 +68,22 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 
 				// 更新上下文
 				Information.Add(new 上下文(blockPosition, GroundMaterial, FloorMaterial));
+
+				// 更新预制体队列编号
+				if (PrefabQueueNumber < BlocksPrefab.Count)
+					PrefabQueueNumber++;
+				else
+					PrefabQueueNumber = 0;
 			}
 			else
 			{
-				Block block; // 预制体
-				block = ((PackedScene)GD.Load("res://工程素材/脚本/预制体/Block/Block.tscn")).Instantiate<Block>();
+				block = BlocksPrefab[PrefabQueueNumber];
 				GetNode<Node2D>($"{LevelName}").AddChild(block);
 				block.Position = new Vector2(context.position.X, context.position.Y); // 位置
 				block.Name = $"{context.position.X},{context.position.Y}";
 				block.ChangeGroundMaterial(context.GroundMaterial);
 				block.ChangeFloorMaterial(context.FloorMaterial);
 			}
-			
-
-			
 		}
 	}
 

@@ -13,6 +13,7 @@ texture_filter = 1
 
 [node name="地图生成器" type="Node2D" parent="."]
 script = ExtResource("1_j7diu")
+prefabCount = 1000
 
 [node name="相机高度" type="Label" parent="."]
 offset_left = 348.0

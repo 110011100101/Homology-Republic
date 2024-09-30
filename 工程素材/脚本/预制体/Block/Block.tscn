@@ -1,9 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://cwjkt5hfq5cvy"]
+[gd_scene load_steps=4 format=3 uid="uid://cwjkt5hfq5cvy"]
 
 [ext_resource type="Script" path="res://工程素材/脚本/预制体/Block/Block.cs" id="1_up21t"]
 [ext_resource type="Script" path="res://工程素材/脚本/预制体/Block/Ground.cs" id="2_niut7"]
 [ext_resource type="Script" path="res://工程素材/脚本/预制体/Block/Floor.cs" id="3_ds4jk"]
-[ext_resource type="FontFile" uid="uid://cr8tijpmqscfm" path="res://工程素材/字体/凤凰点阵体/加粗.ttf" id="5_sll13"]
 
 [node name="调试用Block" type="Node2D"]
 texture_filter = 1
@@ -14,16 +13,3 @@ script = ExtResource("2_niut7")
 
 [node name="Floor" type="Sprite2D" parent="."]
 script = ExtResource("3_ds4jk")
-
-[node name="瓦片坐标" type="Label" parent="."]
-visible = false
-offset_left = -26.0
-offset_top = -4.0
-offset_right = 78.0
-offset_bottom = 12.0
-scale = Vector2(0.5, 0.5)
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_fonts/font = ExtResource("5_sll13")
-text = "(100,100,100)"
-horizontal_alignment = 1
-vertical_alignment = 1
