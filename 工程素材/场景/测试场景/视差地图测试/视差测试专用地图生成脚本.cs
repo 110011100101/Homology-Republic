@@ -1,10 +1,12 @@
 using Godot;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
 public partial class 视差测试专用地图生成脚本 : Node2D
 {
+	public List<上下文> Information {get; set;} = new List<上下文>();
 
 	public override void _Ready()
 	{
@@ -20,7 +22,12 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 	{
 	}
 
-	// 循环生成地图
+	/// <summary>
+	/// 地图生成器
+	/// </summary>
+	/// <param name="blockPosition">位置</param>
+	/// <param name="GroundMaterial">Ground 材质</param>
+	/// <param name="FloorMaterial">Floor 材质</param>
 	public void MapCreater(Vector3 blockPosition, GameMaterial GroundMaterial = null, GameMaterial FloorMaterial = null)
 	{
 		string LevelName = $"{blockPosition.Z}";
@@ -34,17 +41,37 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 		}
 
 		// block不存在
+		// FIXME: 这里没有使用对象池
 		if (!HasNode($"./{LevelName}/{BlockName}"))
 		{
-			Block block; // 预制体
-			block = ((PackedScene)GD.Load("res://工程素材/脚本/预制体/Block/Block.tscn")).Instantiate<Block>();
-			// GD.Print("开始生成block");
-			GetNode<Node2D>($"{LevelName}").AddChild(block);
-			block.Position = 坐标转换器.ToRealPosition(blockPosition); // 位置
-			block.Name = BlockName;
-			block.ChangeGroundMaterial(GroundMaterial);
-			block.ChangeFloorMaterial(FloorMaterial);
+			上下文 context = Information.Find((上下文 x) => x.position == blockPosition);
+			
+			if (context == null)
+			{
+				Block block; // 预制体
+				block = ((PackedScene)GD.Load("res://工程素材/脚本/预制体/Block/Block.tscn")).Instantiate<Block>();
+				GetNode<Node2D>($"{LevelName}").AddChild(block);
+				block.Position = 坐标转换器.ToRealPosition(blockPosition); // 位置
+				block.Name = BlockName;
+				block.ChangeGroundMaterial(GroundMaterial);
+				block.ChangeFloorMaterial(FloorMaterial);
 
+				// 更新上下文
+				Information.Add(new 上下文(blockPosition, GroundMaterial, FloorMaterial));
+			}
+			else
+			{
+				Block block; // 预制体
+				block = ((PackedScene)GD.Load("res://工程素材/脚本/预制体/Block/Block.tscn")).Instantiate<Block>();
+				GetNode<Node2D>($"{LevelName}").AddChild(block);
+				block.Position = new Vector2(context.position.X, context.position.Y); // 位置
+				block.Name = $"{context.position.X},{context.position.Y}";
+				block.ChangeGroundMaterial(context.GroundMaterial);
+				block.ChangeFloorMaterial(context.FloorMaterial);
+			}
+			
+
+			
 		}
 	}
 
