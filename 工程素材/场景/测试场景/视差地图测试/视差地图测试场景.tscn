@@ -14,6 +14,9 @@ texture_filter = 1
 [node name="地图生成器" type="Node2D" parent="."]
 script = ExtResource("1_j7diu")
 prefabCount = 1000
+int_x = 45
+int_y = 28
+int_z = 1
 
 [node name="相机高度" type="Label" parent="."]
 offset_left = 348.0
@@ -37,6 +40,7 @@ script = ExtResource("3_kg6gv")
 [node name="Camera2D" type="Camera2D" parent="."]
 process_callback = 0
 script = ExtResource("2_ykcg1")
+scaleFactor = 0.8
 
 [node name="Sprite2D" type="Sprite2D" parent="Camera2D"]
 texture = ExtResource("4_rywyr")

@@ -2,18 +2,27 @@ using Godot;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data;
 using System.Runtime.CompilerServices;
 
 public partial class 视差测试专用地图生成脚本 : Node2D
 {
-	public List<上下文> Information {get; set;} = new List<上下文>();
+	public List<上下文> Information { get; set; } = new List<上下文>();
 
-	public List<Block> BlocksPrefab {get; set;} = new List<Block>();
-	
-	private Block block; // 预制体
-	private int PrefabQueueNumber = 0; // 预制体队列编号
+	public List<Block> BlocksPrefab { get; set; } = new List<Block>();
+	/// <summary>
+	/// 预制体队列编号
+	/// <para><b>解释:</b>此值用于按顺序使用预制体</para>
+	/// </summary>
+	private int PrefabQueueNumber = 0;
 
+	/// <summary>
+	/// 启用预制体的数量
+	/// </summary>
 	[Export] private int prefabCount = 0;
+	[Export] private int int_x;
+	[Export] private int int_y;
+	[Export] private int int_z;
 
 
 	public override void _Ready()
@@ -21,13 +30,13 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 		for (int i = 0; i < prefabCount; i++)
 			BlocksPrefab.Add(((PackedScene)GD.Load("res://工程素材/脚本/预制体/Block/Block.tscn")).Instantiate<Block>());
 
-		for (int z = 0; z < 1; z++)
-		for (int x = -15; x < 15; x++)
-		for (int y = -15; y < 15; y++)
-		{
-			MapCreater(new Vector3(x, y, z), new TestTile());
-		}
-		
+		// temp
+		for (int z = 0; z < int_z; z++)
+			for (int y = 0; y < int_y; y++)
+				for (int x = 0; x < int_x; x++)
+				{
+					MapCreater(new Vector3(x, y, z), new TestTile());
+				}
 	}
 
 	public override void _Process(double delta)
@@ -48,42 +57,27 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 		// 层不存在
 		if (!HasNode($"./{LevelName}"))
 		{
-			// GD.Print("开始生成层");
 			AddIndex(this, new Node2D() { Name = LevelName });
 		}
 
 		// block不存在
 		if (!HasNode($"./{LevelName}/{BlockName}"))
 		{
+			Block block = BlocksPrefab[PrefabQueueNumber];
 			上下文 context = Information.Find((上下文 x) => x.position == blockPosition);
-			
+
+			GetNode<Node2D>($"{LevelName}").AddChild(block);
+
 			if (context == null)
 			{
-				block = BlocksPrefab[PrefabQueueNumber];
-				GetNode<Node2D>($"{LevelName}").AddChild(block);
-				block.Position = 坐标转换器.ToRealPosition(blockPosition); // 位置
-				block.Name = BlockName;
-				block.ChangeGroundMaterial(GroundMaterial);
-				block.ChangeFloorMaterial(FloorMaterial);
-
-				// 更新上下文
-				Information.Add(new 上下文(blockPosition, GroundMaterial, FloorMaterial));
-
-				// 更新预制体队列编号
-				if (PrefabQueueNumber < BlocksPrefab.Count)
-					PrefabQueueNumber++;
-				else
-					PrefabQueueNumber = 0;
+				InitBlock(block, BlockName, blockPosition, GroundMaterial, FloorMaterial);
+				UpdateContext(blockPosition, GroundMaterial, FloorMaterial);
 			}
 			else
 			{
-				block = BlocksPrefab[PrefabQueueNumber];
-				GetNode<Node2D>($"{LevelName}").AddChild(block);
-				block.Position = new Vector2(context.position.X, context.position.Y); // 位置
-				block.Name = $"{context.position.X},{context.position.Y}";
-				block.ChangeGroundMaterial(context.GroundMaterial);
-				block.ChangeFloorMaterial(context.FloorMaterial);
+				InitBlock(block, $"{context.position.X},{context.position.Y}", new Vector2(context.position.X, context.position.Y), context.GroundMaterial, context.FloorMaterial);
 			}
+			UpdatePrefabeQueueNumber();
 		}
 	}
 
@@ -98,7 +92,7 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 	// 	try
 	// 	{
 	// 		Parent.GetNode<Node2D>(Child);
-			
+
 	// 		GD.Print("IsNodeInAsChild(): return true"); 
 	// 		return true;
 	// 	}
@@ -123,7 +117,7 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 		if (AutoIndexMode)
 		{
 			// 特殊情况处理
-			if(Parent.GetChildCount() == 0)
+			if (Parent.GetChildCount() == 0)
 			{
 				Parent.AddChild(Child);
 			}
@@ -143,5 +137,70 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 			Parent.AddChild(Child);
 			MoveChild(Child, Index);
 		}
+	}
+
+	/// <summary>
+	/// 更新上下文
+	/// </summary>
+	/// <param name="blockPosition">block 的像素级位置</param>
+	/// <param name="GroundMaterial">Ground 材质</param>
+	/// <param name="FloorMaterial">Floor 材质</param>
+	public void UpdateContext(Vector3 blockPosition, GameMaterial GroundMaterial, GameMaterial FloorMaterial)
+	{
+		Information.Add(new 上下文(blockPosition, GroundMaterial, FloorMaterial));
+	}
+
+	/// <summary>
+	/// 移除上下文
+	/// </summary>
+	/// <param name="blockPosition">block 的像素级位置</param>
+	public void RemoveContext(Vector3 blockPosition)
+	{
+		Information.Remove(Information.Find((上下文 x) => x.position == blockPosition));
+	}
+
+	/// <summary>
+	/// 初始化block
+	/// <para><b>重载:</b>接受 vector3 经过转换赋值给 <paramref name="blockPosition"/></para>
+	/// </summary>
+	/// <param name="block">需要初始化的block</param>
+	/// <param name="BlockName">block 名称</param>
+	/// <param name="blockPosition">block 的像素级坐标</param>
+	/// <param name="GroundMaterial">Ground 材质</param>
+	/// <param name="FloorMaterial">Floor 材质</param>
+	public void InitBlock(Block block, string BlockName, Vector3 blockPosition, GameMaterial GroundMaterial, GameMaterial FloorMaterial)
+	{
+		block.Name = BlockName;
+		block.Position = 坐标转换器.ToRealPosition(blockPosition);
+		block.ChangeGroundMaterial(GroundMaterial);
+		block.ChangeFloorMaterial(FloorMaterial);
+	}
+
+	/// <summary>
+	/// 初始化block
+	/// <para><b>重载:</b>接受 vector2 并直接赋值给 <paramref name="blockPosition"/></para>
+	/// </summary>
+	/// <param name="block">需要初始化的block</param>
+	/// <param name="BlockName">block 名称</param>
+	/// <param name="blockPosition">block 的像素级坐标</param>
+	/// <param name="GroundMaterial">Ground 材质</param>
+	/// <param name="FloorMaterial">Floor 材质</param>
+	public void InitBlock(Block block, string BlockName, Vector2 blockPosition, GameMaterial GroundMaterial, GameMaterial FloorMaterial)
+	{
+		block.Name = BlockName;
+		block.Position = blockPosition;
+		block.ChangeGroundMaterial(GroundMaterial);
+		block.ChangeFloorMaterial(FloorMaterial);
+	}
+
+	/// <summary>
+	/// 更新预制体队列编号
+	/// </summary>
+	public void UpdatePrefabeQueueNumber()
+	{
+		if (PrefabQueueNumber < BlocksPrefab.Count)
+			PrefabQueueNumber++;
+		else
+			PrefabQueueNumber = 0;
 	}
 }

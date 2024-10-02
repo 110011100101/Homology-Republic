@@ -6,6 +6,9 @@ using System.Security.Cryptography.X509Certificates;
 
 public partial class 视差地图相机专用脚本 : Camera2D
 {
+	[Export] private int HeightRange = 4;
+	[Export] private double scaleFactor = 0.5;
+
 	public int targetCamerHight; // 相机目标高度
 	public int originalCamerHight = 0; // 相机原始高度
 	public float cameraHight; // 相机真实高度
@@ -13,7 +16,6 @@ public partial class 视差地图相机专用脚本 : Camera2D
 	private Node2D 地图生成器;
 
 	private int cd;
-	private int HeightRange = 4;
 	Label 相机高度显示器;
 	Label 各项参数监控;
 
@@ -101,7 +103,7 @@ public partial class 视差地图相机专用脚本 : Camera2D
 
 			// 更新地图偏移量
 			ChangeMapOffset(this.Position, cameraHight);
-			
+
 			_lastMousePos = eventMouseMotion.Position;
 		}
 	}
@@ -116,11 +118,11 @@ public partial class 视差地图相机专用脚本 : Camera2D
 	/// <param name="Mode">此参数提供了两种模式
 	/// <para>0: 默认模式, 会根据相机高度自动缩放</para>
 	/// <para>1: 初始化模式, 会缩放所有层</para></param>
-	public void ChangeMapScale(float baseHeight, Node2D 地图生成器,bool Mode = true)
+	public void ChangeMapScale(float baseHeight, Node2D 地图生成器, bool Mode = true)
 	{
 		int beginHeight;
 		int endHeight;
-		
+
 		if (Mode)
 		{
 			if (baseHeight < HeightRange)
@@ -146,14 +148,14 @@ public partial class 视差地图相机专用脚本 : Camera2D
 
 			if (i < 地图生成器.GetChildCount())
 				Level = 地图生成器.GetChild<Node2D>(i);
-			else 
+			else
 				break;
-			
+
 			// 缩放
 			float LevelDiff = baseHeight - float.Parse(Level.Name);
-			float ScaleValue = (float)Math.Pow(0.5, LevelDiff); // 更改此处的值来调整缩放大小
+			float ScaleValue = (float)Math.Pow(scaleFactor, LevelDiff);
 			Level.Scale = new Vector2(ScaleValue, ScaleValue); // 进行缩放
-			
+
 			// 透明度
 			if (LevelDiff < 0 && LevelDiff > -1)
 				Level.Modulate = new Color(Level.Modulate.R, Level.Modulate.G, Level.Modulate.B, 1 - Math.Abs(LevelDiff));
@@ -185,7 +187,6 @@ public partial class 视差地图相机专用脚本 : Camera2D
 	/// </summary>
 	/// <param name="CameraPosition">相机位置</param>
 	/// <param name="baseHeight">基准高度</param>
-	// FIXME: 这里其实可以优化,每次不遍历所有的层,只需要遍历当前相机高度附近的层
 	public void ChangeMapOffset(Vector2 CameraPosition, float baseHeight)
 	{
 		int beginHeight;
@@ -208,7 +209,7 @@ public partial class 视差地图相机专用脚本 : Camera2D
 
 			if (i < 地图生成器.GetChildCount())
 				Level = 地图生成器.GetChild<Node2D>(i);
-			else 
+			else
 				break;
 
 			Level.Position = new Vector2(CameraPosition.X * -(Level.Scale.X - 1), CameraPosition.Y * -(Level.Scale.Y - 1)).Round(); // L * 坐标值 / 缩放值
