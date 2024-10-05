@@ -1,5 +1,6 @@
 public enum WorkerStatus
 {
     Idle,
-    Croping
+    Crop,
+    Walk
 }

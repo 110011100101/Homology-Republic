@@ -7,7 +7,7 @@ using System.Runtime.CompilerServices;
 
 public partial class 视差测试专用地图生成脚本 : Node2D
 {
-	public List<上下文> Information { get; set; } = new List<上下文>();
+	public Dictionary<Vector3,上下文> Information { get; set; } = new Dictionary<Vector3, 上下文>();
 
 	public List<Block> BlocksPrefab { get; set; } = new List<Block>();
 	/// <summary>
@@ -64,7 +64,8 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 		if (!HasNode($"./{LevelName}/{BlockName}"))
 		{
 			Block block = BlocksPrefab[PrefabQueueNumber];
-			上下文 context = Information.Find((上下文 x) => x.position == blockPosition);
+			上下文 context;
+			Information.TryGetValue(blockPosition, out context);
 
 			GetNode<Node2D>($"{LevelName}").AddChild(block);
 
@@ -147,7 +148,7 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 	/// <param name="FloorMaterial">Floor 材质</param>
 	public void UpdateContext(Vector3 blockPosition, GameMaterial GroundMaterial, GameMaterial FloorMaterial)
 	{
-		Information.Add(new 上下文(blockPosition, GroundMaterial, FloorMaterial));
+		Information.Add(blockPosition, new 上下文(blockPosition, GroundMaterial, FloorMaterial));
 	}
 
 	/// <summary>
@@ -156,7 +157,7 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 	/// <param name="blockPosition">block 的像素级位置</param>
 	public void RemoveContext(Vector3 blockPosition)
 	{
-		Information.Remove(Information.Find((上下文 x) => x.position == blockPosition));
+		Information.Remove(blockPosition);
 	}
 
 	/// <summary>
@@ -198,9 +199,18 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 	/// </summary>
 	public void UpdatePrefabeQueueNumber()
 	{
-		if (PrefabQueueNumber < BlocksPrefab.Count)
+		if (PrefabQueueNumber < BlocksPrefab.Count - 1)
 			PrefabQueueNumber++;
 		else
 			PrefabQueueNumber = 0;
 	}
+
+
+
+	
+	public void UpdatePosition(Node2D point, Vector3 step)
+    {
+        // 在主线程中更新位置
+        point.Position = 坐标转换器.ToRealPosition(step);
+    }
 }

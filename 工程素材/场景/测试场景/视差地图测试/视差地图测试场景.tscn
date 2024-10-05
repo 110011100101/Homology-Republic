@@ -12,11 +12,12 @@ physics_interpolation_mode = 1
 texture_filter = 1
 
 [node name="地图生成器" type="Node2D" parent="."]
+unique_name_in_owner = true
 script = ExtResource("1_j7diu")
-prefabCount = 1000
-int_x = 45
-int_y = 28
-int_z = 1
+prefabCount = 3375
+int_x = 15
+int_y = 15
+int_z = 15
 
 [node name="相机高度" type="Label" parent="."]
 offset_left = 348.0
@@ -46,5 +47,4 @@ scaleFactor = 0.8
 texture = ExtResource("4_rywyr")
 
 [node name="按键脚本挂载" type="Node2D" parent="."]
-position = Vector2(-100.044, -12.5993)
 script = ExtResource("5_o8jw8")

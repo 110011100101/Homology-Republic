@@ -13,3 +13,5 @@ script = ExtResource("2_niut7")
 
 [node name="Floor" type="Sprite2D" parent="."]
 script = ExtResource("3_ds4jk")
+
+[node name="Objects" type="Node2D" parent="."]

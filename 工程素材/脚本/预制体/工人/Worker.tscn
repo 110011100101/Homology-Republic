@@ -1,9 +1,10 @@
-[gd_scene load_steps=33 format=3 uid="uid://b1jp7rvyhu1wh"]
+[gd_scene load_steps=42 format=3 uid="uid://b1jp7rvyhu1wh"]
 
 [ext_resource type="Script" path="res://工程素材/脚本/预制体/工人/工人行为脚本.cs" id="1_6y0qn"]
 [ext_resource type="Texture2D" uid="uid://mlsm7ttdw0xv" path="res://制作素材包/美术素材/哥布林什么的/美术资产捏/角色/哥布林/PNG/spr_attack_strip10.png" id="2_nodia"]
 [ext_resource type="Texture2D" uid="uid://bu2ccyeos4nnr" path="res://制作素材包/美术素材/哥布林什么的/美术资产捏/角色/哥布林/PNG/spr_axe_strip10.png" id="3_icnmn"]
 [ext_resource type="Texture2D" uid="uid://byue0f16wj3rx" path="res://制作素材包/美术素材/哥布林什么的/美术资产捏/角色/哥布林/PNG/spr_idle_strip9.png" id="4_houp5"]
+[ext_resource type="Texture2D" uid="uid://bbkmwdt2c55vg" path="res://制作素材包/美术素材/哥布林什么的/美术资产捏/角色/哥布林/PNG/spr_run_strip8.png" id="5_tjm6w"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_mtleu"]
 atlas = ExtResource("2_nodia")
@@ -113,6 +114,38 @@ region = Rect2(576, 0, 96, 64)
 atlas = ExtResource("4_houp5")
 region = Rect2(672, 0, 96, 64)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_78v47"]
+atlas = ExtResource("5_tjm6w")
+region = Rect2(0, 0, 96, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_q11gv"]
+atlas = ExtResource("5_tjm6w")
+region = Rect2(96, 0, 96, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_gootr"]
+atlas = ExtResource("5_tjm6w")
+region = Rect2(192, 0, 96, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_br5at"]
+atlas = ExtResource("5_tjm6w")
+region = Rect2(288, 0, 96, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bjn44"]
+atlas = ExtResource("5_tjm6w")
+region = Rect2(384, 0, 96, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_xvn7n"]
+atlas = ExtResource("5_tjm6w")
+region = Rect2(480, 0, 96, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_jqnqo"]
+atlas = ExtResource("5_tjm6w")
+region = Rect2(576, 0, 96, 64)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nag82"]
+atlas = ExtResource("5_tjm6w")
+region = Rect2(672, 0, 96, 64)
+
 [sub_resource type="SpriteFrames" id="SpriteFrames_t6fmr"]
 animations = [{
 "frames": [{
@@ -210,6 +243,35 @@ animations = [{
 "loop": true,
 "name": &"Idle",
 "speed": 12.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_78v47")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_q11gv")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_gootr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_br5at")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bjn44")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_xvn7n")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_jqnqo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nag82")
+}],
+"loop": true,
+"name": &"Walk",
+"speed": 12.0
 }]
 
 [node name="Worker" type="Node2D"]
@@ -218,10 +280,11 @@ texture_filter = 1
 script = ExtResource("1_6y0qn")
 
 [node name="WorkerAnimated" type="AnimatedSprite2D" parent="."]
+scale = Vector2(3, 3)
 sprite_frames = SubResource("SpriteFrames_t6fmr")
-animation = &"Attack"
+animation = &"Walk"
 autoplay = "Idle"
-frame_progress = 0.631168
+frame_progress = 0.902493
 
 [node name="临时相机" type="Camera2D" parent="."]
 zoom = Vector2(4, 4)
