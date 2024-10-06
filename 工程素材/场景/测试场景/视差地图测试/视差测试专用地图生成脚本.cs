@@ -204,13 +204,4 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 		else
 			PrefabQueueNumber = 0;
 	}
-
-
-
-	
-	public void UpdatePosition(Node2D point, Vector3 step)
-    {
-        // 在主线程中更新位置
-        point.Position = 坐标转换器.ToRealPosition(step);
-    }
 }

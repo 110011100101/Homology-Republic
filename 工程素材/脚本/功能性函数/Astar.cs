@@ -1,148 +1,136 @@
 using Godot;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
+using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Threading;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
-public partial class Astar
+public static partial class Astar
 {
-    public Node2D relativeNode;
-
-    Vector3[] directions = new Vector3[]
-    {
-        new Vector3(-1, 0, 0), // 左
-        new Vector3(1, 0, 0),  // 右
-        new Vector3(0, 1, 0), // 前
-        new Vector3(0, -1, 0)   // 后
-    };  
-
-    public void initstar(Node2D relativeNode)
-    {
-        this.relativeNode = relativeNode;
-    }
+    private static Dictionary<Vector3, Vector3> _OpenDictionary; // <节点, 父节点>
+    private static Dictionary<Vector3, Vector3> _CloseDictionary; // <节点, 父节点>
+    private static Dictionary<Vector3, Vector3> _StepLink; // <节点, 父节点>
+    private static Dictionary<Vector3, Vector3> _CostDictionary; // <节点, Vector3(F, G, H)>
+    private static List<Vector3> _path;
+    private static List<Vector3> _FourDirections = new List<Vector3>(){
+        new Vector3(1, 0, 0),
+        new Vector3(0, 1, 0),
+        new Vector3(-1, 0, 0),
+        new Vector3(0, -1, 0)
+    };
 
     /// <summary>
-    /// 记录可以走的路径
-    /// <para>&lt;位置 : Vector4(父节点, 总代价)&gt;</para>
+    /// A*寻路
+    /// <para>
+    /// <b>注意:</b>只能传入矩阵坐标!
+    /// </para>
     /// </summary>
-    private Dictionary<Vector3, Vector4> openDictionary = new Dictionary<Vector3, Vector4>();
-    /// <summary>
-    /// 记录已经走过的位置
-    /// <para>&lt;位置 : 父位置&gt;</para>
-    /// </summary>
-    private Dictionary<Vector3, Vector3> closeDictionary = new Dictionary<Vector3, Vector3>();
-
-    /// <summary>
-    /// AStar寻路
-    /// <para><b>注意:</b>寻路算法只能求出单层的路径, 参数中的 Vector3 包含Z坐标是用于定位block, 如需跨层移动, 可以手动将任务划分为多段路程, 反复调用此方法, 此时的 <paramref name="end"/> 应当为最近的下层入口</para>
-    /// </summary>
-    /// <param name="start"></param>
-    /// <param name="end"></param>
-    /// <param name="context"></param>
-    /// <returns>路径清单</returns>
-    public List<Vector3> AStar(Vector3 start, Vector3 end, Dictionary<Vector3, 上下文> context)
+    /// <param name="start">起始坐标</param>
+    /// <param name="end">终止坐标</param>
+    /// <param name="information">上下文库</param>
+    /// <returns></returns>
+    public static List<Vector2> AstarAlgorithm(Vector3 start, Vector3 end, Dictionary<Vector3, 上下文> information)
     {
-        test(start, end, context);
-        return getPath(closeDictionary, start, end);
-    }
+        Vector3 Step = start;
+        Vector3 ChildStep;
+        _OpenDictionary = new Dictionary<Vector3, Vector3>() { { start, start } };
+        _CloseDictionary = new Dictionary<Vector3, Vector3>();
+        _CostDictionary = new Dictionary<Vector3, Vector3>() { { start, new Vector3((int)(Math.Abs(Step.X - end.X) + Math.Abs(Step.Y - end.Y)), 0, (int)(Math.Abs(Step.X - end.X) + Math.Abs(Step.Y - end.Y))) } };
+        _StepLink = new Dictionary<Vector3, Vector3>() { { start, start } };
+        _path = new List<Vector3>();
 
-    private async Task test(Vector3 start, Vector3 end, Dictionary<Vector3, 上下文> context)
-    {
-        Vector3 step; // 当前走到的位置
-
-        // init
-        step = start;
-
-        openDictionary.Add(step, toVector4(start, 0 + (int)(Mathf.Abs(start.X - end.X) + Mathf.Abs(start.Y - end.Y))));
-        Sprite2D point = new Sprite2D();
-        point.Name = "text";
-        relativeNode.GetChild(0).AddChild(point);
-        point.Texture = GD.Load<Texture2D>("res://工程素材/美术素材包/Tile/WoodFloor_Flower.png");
-
-        await Task.Run(() =>{
-            while (step != end)
-            {
-                relativeNode.CallDeferred("UpdatePosition", point, step);
-                GD.Print("------------------------------");
-                // 打印相关信息
-                GD.Print("当前位置: " + step);
-                GD.Print("当前位置的父节点: " + getFatherStep(openDictionary[step]));
-                GD.Print("当前位置的总代价: " + openDictionary[step].W);
-                GD.Print("目标位置:" + end + "\n");
-                Thread.Sleep(500);
-
-                foreach (Vector3 direction in directions)
-                {
-                    Vector3 targetStep = step + direction; // 上下左右遍历
-
-                    // 如果没有被遍历过,又存在,还能走
-                    if (context.ContainsKey(targetStep) && !closeDictionary.ContainsKey(targetStep) && isStepWalkable(targetStep, context))
-                    {
-                        GD.Print("下一个遍历的位置" + targetStep);
-                        int H = (int)(Mathf.Abs(targetStep.X - end.X) + Mathf.Abs(targetStep.Y - end.Y)); // 启发代价
-                        int G = (int)(Mathf.Abs(targetStep.X - start.X) + Mathf.Abs(targetStep.Y - start.Y)); // 沉默成本
-                        int F = G + H; // 总代价
-
-                        GD.Print($"{F}(F) = {G}(沉默成本G) + {H}(启发代价H)");
-                        GD.Print($"{H}(H) = (int)({Mathf.Abs(targetStep.X - end.X)} + {Mathf.Abs(targetStep.Y - end.Y)})");
-                        GD.Print($"{G}(G) = (int)({Mathf.Abs(targetStep.X - start.X)} + {Mathf.Abs(targetStep.Y - start.Y)}");
-                        GD.Print("\n");
-                        // 如果这个节点没有在openDictionary中, 添加进去
-                        if(!openDictionary.ContainsKey(targetStep))
-                            openDictionary.Add(targetStep, toVector4(step ,F));
-                    }
-                    else if (!closeDictionary.ContainsKey(targetStep)) // 否则就添加到closeDictionary
-                    {
-                        closeDictionary.Add(targetStep, step);
-                    }
-                }
-            
-                closeDictionary.Add(step, getFatherStep(openDictionary[step]));
-                openDictionary.Remove(step);
-
-                if (openDictionary.Count > 0)
-                    step = openDictionary.Aggregate((l, r) => l.Value.W < r.Value.W ? l : r).Key;
-            }
-        });
-
-        closeDictionary.Add(step, getFatherStep(openDictionary[step]));
-        point.QueueFree();
-    }
-
-    public bool isStepWalkable(Vector3 targetStep, Dictionary<Vector3, 上下文> context)
-    {
-        if (context[targetStep].Objects.Count > 0)
-            return false;
-        return true;
-    }
-    
-    public Vector4 toVector4(Vector3 vector3, int value)
-    {
-        return new Vector4(vector3.X, vector3.Y, vector3.Z, value);
-    }
-
-    public Vector3 getFatherStep(Vector4 vector4)
-    {
-        return new Vector3(vector4.X, vector4.Y, vector4.Z);
-    }
-
-    public List<Vector3> getPath(Dictionary<Vector3, Vector3> closeDictionary, Vector3 start, Vector3 end)
-    {
-        Vector3 father = closeDictionary[end];
-
-        List<Vector3> path = new List<Vector3> { end };
-
-        while (father != start)
+        while (Step != end)
         {
-            path.Add(father);
-            father = closeDictionary[father];
+            GD.Print($"----------<{Step}>----------\n");
+            GD.Print("start: " + start);
+            GD.Print("end: " + end + "\n");
+            foreach (Vector3 Direction in _FourDirections)
+            {
+                ChildStep = Step + Direction;
+
+                GD.Print(">>> ChildStep: " + ChildStep); // 当前遍历的节点
+                if (isStepExist(information, ChildStep))
+                {
+                    GD.Print("· isWalkable: " + isWalkable(information, ChildStep) + "\n");
+                    if (isWalkable(information, ChildStep) && !_CloseDictionary.ContainsKey(ChildStep))
+                    {
+                        DictionaryAdd<Vector3, Vector3>(_OpenDictionary, ChildStep, Step);
+                    }
+                    else
+                    {
+                        DictionaryAdd<Vector3, Vector3>(_CloseDictionary, ChildStep, Step);
+                    }
+                    
+                    DictionaryAdd<Vector3, Vector3>(_StepLink, ChildStep, Step);
+                    CountCost(_CostDictionary, _StepLink, ChildStep, end);
+                }
+                else
+                {
+                    // FIXME: 这里未来放报错什么的
+                    GD.Print($"这里不存在{ChildStep}");
+                }
+
+            }
+            DictionaryAdd<Vector3, Vector3>(_CloseDictionary, Step, _OpenDictionary[Step]);
+            _OpenDictionary.Remove(Step);
+            Step = _OpenDictionary.Aggregate((l, r) => _CostDictionary[l.Key].X < _CostDictionary[r.Key].X ? l : r).Key;
         }
-        
-        path.Add(start);
-        path.Reverse();
-        return path;
+        return GetPath(_StepLink, start, end);
+    }
+
+    private static bool isWalkable(Dictionary<Vector3, 上下文> Information, Vector3 Stap)
+    {
+        bool isGround = Information[Stap].GroundMaterial != null;
+        bool isObjects = Information[Stap].Objects.Count() > 0;
+
+        return isGround && !isObjects;
+    }
+
+    private static bool isStepExist(Dictionary<Vector3, 上下文> Information, Vector3 Stap)
+    {
+        return Information.ContainsKey(Stap);
+    }
+
+    private static void CountCost(Dictionary<Vector3, Vector3> CostDic, Dictionary<Vector3, Vector3> LinkDic, Vector3 Step, Vector3 end)
+    {
+        int G = (int)CostDic[LinkDic[Step]].Y + 1; // 沉默成本
+        int H = (int)(Math.Abs(Step.X - end.X) + Math.Abs(Step.Y - end.Y));
+        int F = G + H;
+
+        GD.Print($"Position{Step} --> F:{F}, G:{G}, H:{H}\n");
+        DictionaryAdd<Vector3, Vector3>(CostDic, Step, new Vector3(F, G, H));
+    }
+
+    private static List<Vector2> GetPath(Dictionary<Vector3, Vector3> CloseDic, Vector3 start, Vector3 end)
+    {
+        List<Vector3> path = new List<Vector3> { end };
+        Vector3 step = end;
+
+        while (step != start)
+        {
+            path.Add(CloseDic[step]);
+            step = CloseDic[step];
+        }
+
+        List<Vector2> outPath = new List<Vector2>();
+        foreach (Vector3 item in path)
+        {
+            outPath.Add(坐标转换器.ToRealPosition(item));
+        }
+        outPath.Reverse();
+        return outPath;
+    }
+
+    private static void DictionaryAdd<T, U>(Dictionary<T, U> dic, T key, U value)
+    {
+        if (!dic.ContainsKey(key))
+        {
+            dic.Add(key, value);
+        }
+        else
+        {
+            // FIXME: 这里未来放报错什么的
+        }
     }
 }

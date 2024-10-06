@@ -6,8 +6,8 @@ using System.Security.Cryptography.X509Certificates;
 
 public partial class 视差地图相机专用脚本 : Camera2D
 {
-	[Export] private int HeightRange = 4;
-	[Export] private double scaleFactor = 0.5;
+	[Export] private int _HeightRange = 4;
+	[Export] private double _scaleFactor = 0.5;
 
 	public int targetCamerHight; // 相机目标高度
 	public int originalCamerHight = 0; // 相机原始高度
@@ -15,7 +15,7 @@ public partial class 视差地图相机专用脚本 : Camera2D
 	public float intStep; // 相机高度变化步长
 	private Node2D 地图生成器;
 
-	private int cd;
+	private int _cd;
 	Label 相机高度显示器;
 	Label 各项参数监控;
 
@@ -63,14 +63,14 @@ public partial class 视差地图相机专用脚本 : Camera2D
 			相机高度显示器.Text = $"相机高度: {cameraHight}\n目标高度: {targetCamerHight}\n步长: {intStep}";
 		}
 
-		if (cd != 0)
-			cd = 0;
+		if (_cd != 0)
+			_cd = 0;
 	}
 
 	// 输入事件
 	public override void _Input(InputEvent @event)
 	{
-		if (@event is InputEventMouseButton mouseButton && cd == 0)
+		if (@event is InputEventMouseButton mouseButton && _cd == 0)
 		{
 			// MouseUp -> Level up
 			if (mouseButton.ButtonIndex == MouseButton.WheelUp && targetCamerHight < 500)
@@ -80,7 +80,7 @@ public partial class 视差地图相机专用脚本 : Camera2D
 			if (mouseButton.ButtonIndex == MouseButton.WheelDown && targetCamerHight > 0)
 				targetCamerHight--;
 
-			cd = 1;
+			_cd = 1;
 
 			// [监测]相机参数
 			相机高度显示器.Text = $"相机高度: {cameraHight}\n目标高度: {targetCamerHight}\n步长: {intStep}";
@@ -125,14 +125,14 @@ public partial class 视差地图相机专用脚本 : Camera2D
 
 		if (Mode)
 		{
-			if (baseHeight < HeightRange)
+			if (baseHeight < _HeightRange)
 			{
 				beginHeight = 0;
 				endHeight = (int)baseHeight + 2;
 			}
 			else
 			{
-				beginHeight = (int)baseHeight - HeightRange;
+				beginHeight = (int)baseHeight - _HeightRange;
 				endHeight = (int)baseHeight + 2;
 			}
 		}
@@ -153,19 +153,19 @@ public partial class 视差地图相机专用脚本 : Camera2D
 
 			// 缩放
 			float LevelDiff = baseHeight - float.Parse(Level.Name);
-			float ScaleValue = (float)Math.Pow(scaleFactor, LevelDiff);
+			float ScaleValue = (float)Math.Pow(_scaleFactor, LevelDiff);
 			Level.Scale = new Vector2(ScaleValue, ScaleValue); // 进行缩放
 
 			// 透明度
 			if (LevelDiff < 0 && LevelDiff > -1)
 				Level.Modulate = new Color(Level.Modulate.R, Level.Modulate.G, Level.Modulate.B, 1 - Math.Abs(LevelDiff));
-			else if (LevelDiff <= -1 || LevelDiff >= HeightRange)
+			else if (LevelDiff <= -1 || LevelDiff >= _HeightRange)
 				Level.Modulate = new Color(Level.Modulate.R, Level.Modulate.G, Level.Modulate.B, 0);
 			else
 				Level.Modulate = new Color(Level.Modulate.R, Level.Modulate.G, Level.Modulate.B, 1);
 
 			// 是否可见
-			if (LevelDiff <= -1 || LevelDiff >= HeightRange)
+			if (LevelDiff <= -1 || LevelDiff >= _HeightRange)
 			{
 				Level.Visible = false;
 			}
@@ -192,14 +192,14 @@ public partial class 视差地图相机专用脚本 : Camera2D
 		int beginHeight;
 		int endHeight;
 
-		if (baseHeight < HeightRange)
+		if (baseHeight < _HeightRange)
 		{
 			beginHeight = 0;
 			endHeight = (int)baseHeight + 2;
 		}
 		else
 		{
-			beginHeight = (int)baseHeight - HeightRange;
+			beginHeight = (int)baseHeight - _HeightRange;
 			endHeight = (int)baseHeight + 2;
 		}
 

@@ -2,4 +2,5 @@
     "Codegeex.RepoIndex": true,
     "commentTranslate.source": "Bing",
     "commentTranslate.multiLineMerge": false,
+    "todo-tree.tree.disableCompactFolders": true,
 }
