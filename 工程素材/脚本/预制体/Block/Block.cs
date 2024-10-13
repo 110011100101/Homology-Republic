@@ -1,18 +1,43 @@
 using Godot;
 using System;
 
-public partial class Block : Node2D
+public partial class Block : Sprite2D
 {
 	public bool isWalkable; // 此方块上方是否允许行走
 	public Vector3 BlockPosition; // 矩阵位置
-	public Floor floor;
-	public Ground ground;
+	private GameMaterial floorMaterial;
+	public GameMaterial FloorMaterial
+	{
+		get
+		{
+			return floorMaterial;
+		}
+		set
+		{
+			floorMaterial = value;
+
+			// 更新材质图片
+			Texture = (Texture2D)GD.Load(value.strFloorTexturePath);
+		}
+	}
+	private GameMaterial groundMaterial;
+	private GameMaterial GroundMaterial
+	{
+		get
+		{
+			return groundMaterial;
+		}
+		set
+		{
+			groundMaterial = value;
+
+			// 更新材质图片
+			Texture = (Texture2D)GD.Load(value.strGroundTexturePath);
+		}
+	}
 
 	public override void _Ready()
 	{
-		// 这里写挂载逻辑
-		floor = GetNode<Floor>("Floor");
-		ground = GetNode<Ground>("Ground");
 	}
 
 	public override void _Process(double delta)
@@ -25,7 +50,7 @@ public partial class Block : Node2D
 		if (targetMaterial != null)
 		{
 			// 这里写更改逻辑
-			floor.FloorMaterial = targetMaterial;
+			FloorMaterial = targetMaterial;
 		}
 	}
 
@@ -35,7 +60,20 @@ public partial class Block : Node2D
 		if (targetMaterial != null)
 		{
 			// 这里写更改逻辑
-			ground.GroundMaterial = targetMaterial;
+			GroundMaterial = targetMaterial;
+		}
+	}
+
+	public void AddItemAbove(Item NewItem)
+	{
+		AddChild(NewItem);
+	}
+
+	public void RemoveItemAbove(Item item)
+	{
+		if (item != null)
+		{
+			item.QueueFree();
 		}
 	}
 }

@@ -1,17 +1,7 @@
-[gd_scene load_steps=4 format=3 uid="uid://cwjkt5hfq5cvy"]
+[gd_scene load_steps=2 format=3 uid="uid://cwjkt5hfq5cvy"]
 
 [ext_resource type="Script" path="res://工程素材/脚本/预制体/Block/Block.cs" id="1_up21t"]
-[ext_resource type="Script" path="res://工程素材/脚本/预制体/Block/Ground.cs" id="2_niut7"]
-[ext_resource type="Script" path="res://工程素材/脚本/预制体/Block/Floor.cs" id="3_ds4jk"]
 
-[node name="调试用Block" type="Node2D"]
+[node name="Block" type="Sprite2D"]
 texture_filter = 1
 script = ExtResource("1_up21t")
-
-[node name="Ground" type="Sprite2D" parent="."]
-script = ExtResource("2_niut7")
-
-[node name="Floor" type="Sprite2D" parent="."]
-script = ExtResource("3_ds4jk")
-
-[node name="Objects" type="Node2D" parent="."]
