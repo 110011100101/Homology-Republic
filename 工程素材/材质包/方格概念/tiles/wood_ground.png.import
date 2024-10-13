@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bjbjw73kbjpvf"
-path="res://.godot/imported/Sprite-0001.png-8dc134956e2deac3fb36763b94f466f6.ctex"
+uid="uid://b6fhk55hxuxs"
+path="res://.godot/imported/wood_ground.png-c179d1a95100993e9072ca62481fc85f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://工程素材/美术素材包/Tile/Sprite-0001.png"
-dest_files=["res://.godot/imported/Sprite-0001.png-8dc134956e2deac3fb36763b94f466f6.ctex"]
+source_file="res://工程素材/材质包/方格概念/tiles/wood_ground.png"
+dest_files=["res://.godot/imported/wood_ground.png-c179d1a95100993e9072ca62481fc85f.ctex"]
 
 [params]
 
