@@ -1,8 +1,3 @@
-using System.Data;
-using System.Diagnostics;
-using System.Runtime.Intrinsics.X86;
-using System.Security.Cryptography;
-
 public abstract class GameMaterial
 {
     public abstract string strName {get;} // 名称
@@ -87,7 +82,7 @@ public class earth : GameMaterial
 {
     // 必须实现的属性
     public override string strName => "erth";
-    public override string strGroundTexturePath => 图片路径.earthBlockTexturePath;
+    public override string strGroundTexturePath => 图片路径.earthGroundTexturePath;
     public override string strFloorTexturePath => 图片路径.earthFloorTexturePath;
     public override MaterialType Type => MaterialType.Solid;
     public override bool isFlammable => false;
@@ -104,7 +99,7 @@ public class water : GameMaterial
 {
     // 必须实现的属性
     public override string strName => "water";
-    public override string strGroundTexturePath => 图片路径.waterBlockTexturePath;
+    public override string strGroundTexturePath => 图片路径.waterGroundTexturePath;
     public override string strFloorTexturePath => null;
     public override MaterialType Type => MaterialType.Liquid;
     public override bool isFlammable => false;
@@ -121,7 +116,7 @@ public class grass : GameMaterial
 {
     // 必须实现的属性
     public override string strName => "grass";
-    public override string strGroundTexturePath => 图片路径.grassBlockTexturePath;
+    public override string strGroundTexturePath => 图片路径.grassGroundTexturePath;
     public override string strFloorTexturePath => 图片路径.grassFloorTexturePath;
     public override MaterialType Type => MaterialType.Solid;
     public override bool isFlammable => true;
@@ -138,7 +133,7 @@ public class wood : GameMaterial
 {
     // 必须实现的属性
     public override string strName => "wood";
-    public override string strGroundTexturePath => 图片路径.woodBlockTexturePath;
+    public override string strGroundTexturePath => 图片路径.woodGroundTexturePath;
     public override string strFloorTexturePath => 图片路径.woodFloorTexturePath;
     public override MaterialType Type => MaterialType.Solid;
     public override bool isFlammable => true;
@@ -155,7 +150,7 @@ public class stone : GameMaterial
 {
     // 必须实现的属性
     public override string strName => "stone";
-    public override string strGroundTexturePath => 图片路径.stoneBlockTexturePath;
+    public override string strGroundTexturePath => 图片路径.stoneGroundTexturePath;
     public override string strFloorTexturePath => 图片路径.stoneFloorTexturePath;
     public override MaterialType Type => MaterialType.Solid;
     public override bool isFlammable => false;
@@ -172,7 +167,7 @@ public class sand : GameMaterial
 {
     // 必须实现的属性
     public override string strName => "sand";
-    public override string strGroundTexturePath => 图片路径.sandBlockTexturePath;
+    public override string strGroundTexturePath => 图片路径.sandGroundTexturePath;
     public override string strFloorTexturePath => null;
     public override MaterialType Type => MaterialType.Solid;
     public override bool isFlammable => false;
@@ -210,7 +205,7 @@ public class snow : water
 public class TestTile : GameMaterial
 {
     public override string strName => "TestTile";
-    public override string strGroundTexturePath => 图片路径.testBlockTexturePath;
+    public override string strGroundTexturePath => 图片路径.testGroundTexturePath;
     public override string strFloorTexturePath => 图片路径.testFloorTexturePath;
     public override MaterialType Type => MaterialType.Solid; // 类型
     public override bool isFlammable => false; // 是否易燃

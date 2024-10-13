@@ -7,7 +7,7 @@ using System.Security.Cryptography.X509Certificates;
 public partial class 视差地图相机专用脚本 : Camera2D
 {
 	[Export] private int _HeightRange = 4;
-	[Export] private double _scaleFactor = 0.5;
+	[Export] private double _scaleFactor = 0.8;
 
 	public int targetCamerHight; // 相机目标高度
 	public int originalCamerHight = 0; // 相机原始高度

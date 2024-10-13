@@ -10,18 +10,18 @@ public partial class 上下文 : Node
     public GameMaterial FloorMaterial {get; set;}
     
     // FIXME: 类型要改成针对的类型, 并且所有东西应该都继承自Objects类
-    public List<Node2D> Objects {get; set;}
+    public List<Item> Items {get; set;}
 
     public 上下文(Vector3 position, GameMaterial groundMaterial, GameMaterial floorMaterial)
     {
         this.position = position;
         this.GroundMaterial = groundMaterial;
         this.FloorMaterial = floorMaterial;
-        this.Objects = new List<Node2D>();
+        this.Items = new List<Item>();
     }
 
-    public void AddObject(Node2D obj)
+    public void AddItem(Item NewItem)
     {
-        // FIXME: 这里到时候要用switch
+        Items.Add(NewItem);
     }
 }

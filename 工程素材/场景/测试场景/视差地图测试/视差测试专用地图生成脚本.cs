@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Runtime.CompilerServices;
+using System.Threading;
+using System.Threading.Tasks;
 
 public partial class 视差测试专用地图生成脚本 : Node2D
 {
@@ -29,18 +31,25 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 	{
 		for (int i = 0; i < prefabCount; i++)
 			BlocksPrefab.Add(((PackedScene)GD.Load("res://工程素材/脚本/预制体/Block/Block.tscn")).Instantiate<Block>());
-
-		// temp
-		for (int z = 0; z < int_z; z++)
-			for (int y = 0; y < int_y; y++)
-				for (int x = 0; x < int_x; x++)
-				{
-					MapCreater(new Vector3(x, y, z), new TestTile());
-				}
+		Task.Run(() =>
+		{
+			// temp
+			for (int z = 0; z < int_z; z++)
+				for (int y = 0; y < int_y; y++)
+					for (int x = 0; x < int_x; x++)
+					{
+						CallDeferred("DefferMapCreater", new Vector3(x, y, z));
+						Thread.Sleep(5);
+					}
+		});
 	}
 
 	public override void _Process(double delta)
 	{
+	}
+
+	public void DefferMapCreater(Vector3 position){
+		MapCreater(position, new wood());
 	}
 
 	/// <summary>
