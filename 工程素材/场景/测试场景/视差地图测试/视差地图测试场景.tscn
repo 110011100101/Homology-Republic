@@ -41,7 +41,6 @@ script = ExtResource("3_kg6gv")
 [node name="Camera2D" type="Camera2D" parent="."]
 process_callback = 0
 script = ExtResource("2_ykcg1")
-_scaleFactor = 0.8
 
 [node name="Sprite2D" type="Sprite2D" parent="Camera2D"]
 texture = ExtResource("4_rywyr")

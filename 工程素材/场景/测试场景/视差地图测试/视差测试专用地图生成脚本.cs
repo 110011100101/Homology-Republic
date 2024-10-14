@@ -76,7 +76,8 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 			上下文 context;
 			Information.TryGetValue(blockPosition, out context);
 
-			GetNode<Node2D>($"{LevelName}").AddChild(block);
+			if (block.IsInsideTree())
+				block.GetParent().RemoveChild(block);
 
 			if (context == null)
 			{
@@ -87,6 +88,7 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 			{
 				InitBlock(block, $"{context.position.X},{context.position.Y}", new Vector2(context.position.X, context.position.Y), context.GroundMaterial, context.FloorMaterial);
 			}
+			GetNode<Node2D>($"{LevelName}").AddChild(block);
 			UpdatePrefabeQueueNumber();
 		}
 	}

@@ -22,10 +22,8 @@ window/size/viewport_height=900
 window/stretch/mode="canvas_items"
 window/vsync/vsync_mode=0
 window/max_fps=165
-window/max_physics_steps_per_frame=11
-window/physics_ticks_per_second=165
 window/enable_object_picking=true
-window/physics_interpolation=true
+window/physics_interpolation=false
 
 [dotnet]
 
@@ -52,7 +50,6 @@ theme/lcd_subpixel_layout=0
 common/physics_ticks_per_second=165
 common/max_physics_steps_per_frame=11
 common/physics_jitter_fix=0.0
-common/physics_interpolation=true
 
 [rendering]
 
