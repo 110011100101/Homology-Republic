@@ -72,9 +72,8 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 		// block不存在
 		if (!HasNode($"./{LevelName}/{BlockName}"))
 		{
-			Block block = BlocksPrefab[PrefabQueueNumber];
-			上下文 context;
-			Information.TryGetValue(blockPosition, out context);
+            Block block = BlocksPrefab[PrefabQueueNumber];
+            Information.TryGetValue(blockPosition, out 上下文 context);
 
 			if (block.IsInsideTree())
 				block.GetParent().RemoveChild(block);

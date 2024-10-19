@@ -1,0 +1,133 @@
+[gd_scene load_steps=12 format=3 uid="uid://bryhsalmiwygt"]
+
+[ext_resource type="Texture2D" uid="uid://bh4h1pjhyf6im" path="res://制作素材包/美术素材/场景美术/主菜单美术素材/纯色背景.jpg" id="1_3lw5y"]
+[ext_resource type="Texture2D" uid="uid://ckdt0xrluial7" path="res://制作素材包/美术素材/场景美术/主菜单美术素材/猫咪背景.jpg" id="2_5bdb0"]
+[ext_resource type="Texture2D" uid="uid://e0ryoflrfw0e" path="res://制作素材包/美术素材/UI/Complete_GUI_Essential_Pack_Free_Version/01_Basic_Collection/01_Flat_Theme/Sprites/UI_Flat_Button_Large_Lock_01a1.png" id="3_g834s"]
+[ext_resource type="Texture2D" uid="uid://bsodiqxalptt8" path="res://制作素材包/美术素材/UI/Complete_GUI_Essential_Pack_Free_Version/01_Basic_Collection/01_Flat_Theme/Sprites/UI_Flat_Button_Large_Lock_01a3.png" id="4_k25mu"]
+[ext_resource type="Texture2D" uid="uid://cevd5cnoh12di" path="res://制作素材包/美术素材/UI/Complete_GUI_Essential_Pack_Free_Version/01_Basic_Collection/01_Flat_Theme/Sprites/UI_Flat_Button_Large_Lock_01a2.png" id="5_h5nan"]
+[ext_resource type="FontFile" uid="uid://cr8tijpmqscfm" path="res://工程素材/字体/凤凰点阵体/加粗.ttf" id="6_0f624"]
+[ext_resource type="Script" path="res://工程素材/脚本/按场景/主菜单/组件脚本/ContiueButton.cs" id="6_rdiw2"]
+[ext_resource type="Script" path="res://工程素材/脚本/图书馆/类/ButtonLable.cs" id="7_uklwx"]
+[ext_resource type="Script" path="res://工程素材/脚本/按场景/主菜单/组件脚本/CreateWordButton.cs" id="8_dnwgr"]
+[ext_resource type="Script" path="res://工程素材/脚本/按场景/主菜单/组件脚本/SettingButton.cs" id="9_c20mv"]
+[ext_resource type="Script" path="res://工程素材/脚本/按场景/主菜单/组件脚本/Exit.cs" id="11_ygxvy"]
+
+[node name="主菜单" type="Node2D"]
+texture_filter = 1
+
+[node name="背景图编组" type="Node2D" parent="."]
+
+[node name="纯色背景" type="Sprite2D" parent="背景图编组"]
+position = Vector2(267, 0)
+texture = ExtResource("1_3lw5y")
+
+[node name="人物背景图" type="Sprite2D" parent="背景图编组"]
+position = Vector2(-286, 0)
+texture = ExtResource("2_5bdb0")
+
+[node name="按钮编组" type="Node2D" parent="."]
+position = Vector2(52, 3)
+scale = Vector2(3, 3)
+metadata/_edit_group_ = true
+
+[node name="继续游戏" type="TextureButton" parent="按钮编组"]
+texture_filter = 1
+offset_left = 91.0
+offset_top = -96.0
+offset_right = 187.0
+offset_bottom = -64.0
+keep_pressed_outside = true
+texture_normal = ExtResource("3_g834s")
+texture_pressed = ExtResource("4_k25mu")
+texture_hover = ExtResource("5_h5nan")
+script = ExtResource("6_rdiw2")
+
+[node name="Label" type="Label" parent="按钮编组/继续游戏"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 95.0
+offset_bottom = 25.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("6_0f624")
+text = "继续游戏"
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("7_uklwx")
+
+[node name="创建世界按钮" type="TextureButton" parent="按钮编组"]
+offset_left = 93.0
+offset_top = -47.0
+offset_right = 189.0
+offset_bottom = -15.0
+keep_pressed_outside = true
+texture_normal = ExtResource("3_g834s")
+texture_pressed = ExtResource("4_k25mu")
+texture_hover = ExtResource("5_h5nan")
+script = ExtResource("8_dnwgr")
+
+[node name="Label" type="Label" parent="按钮编组/创建世界按钮"]
+texture_filter = 1
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 95.0
+offset_bottom = 25.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("6_0f624")
+text = "创建世界"
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("7_uklwx")
+
+[node name="设置按钮" type="TextureButton" parent="按钮编组"]
+offset_left = 93.0
+offset_top = 3.0
+offset_right = 189.0
+offset_bottom = 35.0
+keep_pressed_outside = true
+texture_normal = ExtResource("3_g834s")
+texture_pressed = ExtResource("4_k25mu")
+texture_hover = ExtResource("5_h5nan")
+script = ExtResource("9_c20mv")
+
+[node name="Label" type="Label" parent="按钮编组/设置按钮"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 95.0
+offset_bottom = 25.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("6_0f624")
+text = "设置
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("7_uklwx")
+
+[node name="退出" type="TextureButton" parent="按钮编组"]
+texture_filter = 1
+offset_left = 93.0
+offset_top = 46.6667
+offset_right = 189.0
+offset_bottom = 78.6667
+keep_pressed_outside = true
+texture_normal = ExtResource("3_g834s")
+texture_pressed = ExtResource("4_k25mu")
+texture_hover = ExtResource("5_h5nan")
+script = ExtResource("11_ygxvy")
+
+[node name="Label" type="Label" parent="按钮编组/退出"]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 1.0
+offset_right = 95.0
+offset_bottom = 25.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_fonts/font = ExtResource("6_0f624")
+text = "退出"
+horizontal_alignment = 1
+vertical_alignment = 1
+script = ExtResource("7_uklwx")
+
+[node name="Camera2D" type="Camera2D" parent="."]

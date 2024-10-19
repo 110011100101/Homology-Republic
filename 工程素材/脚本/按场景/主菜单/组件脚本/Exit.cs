@@ -1,9 +1,8 @@
 using Godot;
 using System;
 
-public partial class MapCreater : Node2D
+public partial class Exit : ChangeSceneButton
 {
-	int size;
 	public override void _Ready()
 	{
 	}
@@ -12,13 +11,8 @@ public partial class MapCreater : Node2D
 	{
 	}
 
-	public void WorkFlow()
+	public override void ChangeScene()
 	{
-		
-	}
-
-	private void CreateBlock(int size)
-	{
-
+		GetTree().Quit();
 	}
 }

@@ -1,4 +1,5 @@
 # Godot 4+ specific ignores
 .godot/
 .vscode/
-制作素材包
+制作素材包/
+Doxygen

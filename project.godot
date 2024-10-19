@@ -11,15 +11,19 @@ config_version=5
 [application]
 
 config/name="同调共和"
-run/main_scene="res://工程素材/场景/主菜单.tscn"
+run/main_scene="res://工程素材/脚本/按场景/启动Logo/LaunchScreen.tscn"
 config/features=PackedStringArray("4.3", "C#", "Forward Plus")
 run/max_fps=165
+
+[autoload]
+
+Data="*res://工程素材/脚本/图书馆/Data.cs"
 
 [display]
 
 window/size/viewport_width=1440
 window/size/viewport_height=900
-window/stretch/mode="canvas_items"
+window/stretch/mode="viewport"
 window/vsync/vsync_mode=0
 window/max_fps=165
 window/enable_object_picking=true
@@ -39,11 +43,12 @@ folder_colors={
 
 [gui]
 
-fonts/dynamic_fonts/use_oversampling=false
-theme/default_font_antialiasing=0
-theme/default_font_hinting=0
-theme/default_font_subpixel_positioning=0
-theme/lcd_subpixel_layout=0
+theme/custom_font="res://工程素材/字体/凤凰点阵体/加粗.ttf"
+theme/default_font_generate_mipmaps=true
+
+[internationalization]
+
+rendering/root_node_auto_translate=false
 
 [physics]
 

@@ -17,7 +17,7 @@ script = ExtResource("1_j7diu")
 prefabCount = 3000
 int_x = 54
 int_y = 35
-int_z = 15
+int_z = 4
 
 [node name="相机高度" type="Label" parent="."]
 offset_left = 348.0
