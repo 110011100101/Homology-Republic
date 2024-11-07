@@ -60,6 +60,7 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 	/// <param name="FloorMaterial">Floor 材质</param>
 	public void MapCreater(Vector3 blockPosition, GameMaterial GroundMaterial = null, GameMaterial FloorMaterial = null)
 	{
+		// 初始化名称
 		string LevelName = $"{blockPosition.Z}";
 		string BlockName = $"{blockPosition.X},{blockPosition.Y}";
 
@@ -73,11 +74,13 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 		if (!HasNode($"./{LevelName}/{BlockName}"))
 		{
             Block block = BlocksPrefab[PrefabQueueNumber];
-            Information.TryGetValue(blockPosition, out 上下文 context);
+            Information.TryGetValue(blockPosition, out 上下文 context); // 尝试获取方块位置的上下文信息
 
-			if (block.IsInsideTree())
+			// 如果方块已经在场景树中，将其从父节点移除
+			if (block.IsInsideTree()) 
 				block.GetParent().RemoveChild(block);
 
+			// 如果当前位置的上下文信息为空，则初始化方块并更新上下文
 			if (context == null)
 			{
 				InitBlock(block, BlockName, blockPosition, GroundMaterial, FloorMaterial);
@@ -85,9 +88,12 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 			}
 			else
 			{
+				// 根据上下文信息初始化方块
 				InitBlock(block, $"{context.position.X},{context.position.Y}", new Vector2(context.position.X, context.position.Y), context.GroundMaterial, context.FloorMaterial);
 			}
+			// 将方块添加到当前级别节点中
 			GetNode<Node2D>($"{LevelName}").AddChild(block);
+			// 更新预设队列编号
 			UpdatePrefabeQueueNumber();
 		}
 	}

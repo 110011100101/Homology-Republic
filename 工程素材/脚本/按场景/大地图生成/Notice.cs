@@ -1,9 +1,8 @@
 using Godot;
 using System;
 
-public partial class MapCreater : Node2D
+public partial class Notice : RichTextLabel
 {
-	int size;
 	public override void _Ready()
 	{
 	}
@@ -12,13 +11,8 @@ public partial class MapCreater : Node2D
 	{
 	}
 
-	public void WorkFlow()
+	public void OutputNotice(string notice)
 	{
-		
-	}
-
-	private void CreateBlock(int size)
-	{
-
+		this.AddText("\n" + notice);
 	}
 }

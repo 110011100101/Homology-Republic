@@ -13,6 +13,14 @@ public static partial class 坐标转换器
         return new Vector2(realX, realY);
     }
 
+    public static Vector2 ToRealPosition(Vector2 matrixPosition)
+    {
+        float realX = (float)(64 * matrixPosition.X);
+        float realY = (float)(64 * matrixPosition.Y);
+        
+        return new Vector2(realX, realY);
+    }
+
     public static Vector3 ToMatrixPosition(Vector2 realPosition, float height)
     {
         return new Vector3((int)(realPosition.X / 64), (int)(realPosition.Y / 64), height);

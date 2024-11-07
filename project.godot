@@ -44,7 +44,6 @@ folder_colors={
 [gui]
 
 theme/custom_font="res://工程素材/字体/凤凰点阵体/加粗.ttf"
-theme/default_font_generate_mipmaps=true
 
 [internationalization]
 

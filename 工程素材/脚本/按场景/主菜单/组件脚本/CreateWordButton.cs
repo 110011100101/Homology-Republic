@@ -13,6 +13,6 @@ public partial class CreateWordButton : ChangeSceneButton
 
 	public override void ChangeScene()
 	{
-		GetTree().ChangeSceneToPacked(GetNode<Data>("/root/Data").CreateWordMenu);
+		GetTree().ChangeSceneToPacked(GetNode<Data>("/root/Data").CreatePlanetMenu);
 	}
 }

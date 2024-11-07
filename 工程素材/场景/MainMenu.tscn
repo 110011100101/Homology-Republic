@@ -12,16 +12,16 @@
 [ext_resource type="Script" path="res://工程素材/脚本/按场景/主菜单/组件脚本/SettingButton.cs" id="9_c20mv"]
 [ext_resource type="Script" path="res://工程素材/脚本/按场景/主菜单/组件脚本/Exit.cs" id="11_ygxvy"]
 
-[node name="主菜单" type="Node2D"]
+[node name="MainMenu" type="Node2D"]
 texture_filter = 1
 
-[node name="背景图编组" type="Node2D" parent="."]
+[node name="BackGroundGroup" type="Node2D" parent="."]
 
-[node name="纯色背景" type="Sprite2D" parent="背景图编组"]
+[node name="BackGround" type="Sprite2D" parent="BackGroundGroup"]
 position = Vector2(267, 0)
 texture = ExtResource("1_3lw5y")
 
-[node name="人物背景图" type="Sprite2D" parent="背景图编组"]
+[node name="CharacterBackGround" type="Sprite2D" parent="BackGroundGroup"]
 position = Vector2(-286, 0)
 texture = ExtResource("2_5bdb0")
 

@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public partial class 预览世界名称 : Label
+public partial class PreViewPlanetName : Label
 {
 	// 预设位置坐标
 	public Vector2 prePosition = new Vector2(0, 60);

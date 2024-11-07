@@ -1,7 +1,7 @@
 using Godot;
 using System;
 
-public partial class ToBaseWorldCreatingMenuButton : ChangeSceneButton
+public partial class PlanetSettingButton : ChangeSceneButton
 {
 	public override void _Ready()
 	{
@@ -13,6 +13,6 @@ public partial class ToBaseWorldCreatingMenuButton : ChangeSceneButton
 
 	public override void ChangeScene()
 	{
-		GetTree().ChangeSceneToPacked(GetNode<Data>("/root/Data").BaseWorldCreatingMenu);
+		// FIXME: 这里要跳转到世界设置的场景
 	}
 }

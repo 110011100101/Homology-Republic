@@ -51,8 +51,8 @@ public partial class LaunchScreenTitleGroup : Node2D
 	{
 		// TODO: 在这加载所有资源
 		GetNode<Data>("/root/Data").MainMenu = GD.Load<PackedScene>(ScenePath.MainMenu);
-		GetNode<Data>("/root/Data").CreateWordMenu = GD.Load<PackedScene>(ScenePath.CreateWordMenu);
-		GetNode<Data>("/root/Data").BaseWorldCreatingMenu = GD.Load<PackedScene>(ScenePath.BaseWorldCreatingMenu);
+		GetNode<Data>("/root/Data").CreatePlanetMenu = GD.Load<PackedScene>(ScenePath.CreatePlanetMenu);
+		GetNode<Data>("/root/Data").BasePlanetCreatingMenu = GD.Load<PackedScene>(ScenePath.BasePlanetCreatingMenu);
 		GetNode<Data>("/root/Data").SettingMenu = GD.Load<PackedScene>(ScenePath.SettingMenu);
 		GetNode<Data>("/root/Data").PlayGround = GD.Load<PackedScene>(ScenePath.PlayGround);
 
