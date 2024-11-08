@@ -26,6 +26,11 @@ public static partial class 坐标转换器
         return new Vector3((int)(realPosition.X / 64), (int)(realPosition.Y / 64), height);
     }
 
+    public static Vector2 ToMatrixPosition(Vector2 realPosition)
+    {
+        return new Vector2((int)(realPosition.X / 64), (int)(realPosition.Y / 64));
+    }
+
     // 高差计算
     public static int CalculateHeight(float baseHight, float thisHight)
     {

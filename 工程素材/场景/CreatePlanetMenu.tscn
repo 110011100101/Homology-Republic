@@ -50614,7 +50614,7 @@ offset_left = 78.0
 offset_right = 270.0
 offset_bottom = 31.0
 max_value = 1000.0
-value = 20.0
+value = 50.0
 update_on_text_changed = true
 suffix = "Block"
 
@@ -50662,8 +50662,8 @@ offset_top = -2.0
 offset_right = 270.0
 offset_bottom = 29.0
 min_value = 1.0
-max_value = 1.0
-value = 1.0
+max_value = 10.0
+value = 7.0
 update_on_text_changed = true
 script = ExtResource("13_65uw1")
 
