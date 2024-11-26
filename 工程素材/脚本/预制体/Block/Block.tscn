@@ -1,9 +1,0 @@
-[gd_scene load_steps=3 format=3 uid="uid://cwjkt5hfq5cvy"]
-
-[ext_resource type="Texture2D" uid="uid://oaymlwqirg7b" path="res://工程素材/材质包/方格概念/tiles/defule.png" id="1_spywg"]
-[ext_resource type="Script" path="res://工程素材/脚本/预制体/Block/Block.cs" id="1_up21t"]
-
-[node name="Block" type="Sprite2D"]
-texture_filter = 1
-texture = ExtResource("1_spywg")
-script = ExtResource("1_up21t")

@@ -1,0 +1,36 @@
+[gd_scene load_steps=4 format=3 uid="uid://djmp5mfxtxpap"]
+
+[ext_resource type="Script" path="res://GameFile/StaticData/Script/Scripts/Creater/MapCreater.cs" id="1_rr6du"]
+[ext_resource type="Script" path="res://GameFile/StaticData/Script/UI/Notice_BasePlanetCreatingMenu.cs" id="2_ihpf2"]
+[ext_resource type="Script" path="res://GameFile/StaticData/Script/UI/Camera_BasePlanetCreatingMenu.cs" id="3_ivfej"]
+
+[node name="BasePlanetCreatingMenu" type="Node2D"]
+texture_filter = 1
+
+[node name="MapCreater" type="Node2D" parent="."]
+script = ExtResource("1_rr6du")
+
+[node name="Notice" type="RichTextLabel" parent="."]
+offset_left = -6838.0
+offset_top = -4220.0
+offset_right = -6525.0
+offset_bottom = -3947.0
+scale = Vector2(15, 15)
+text = "控制台加载成功"
+scroll_following = true
+threaded = true
+script = ExtResource("2_ihpf2")
+
+[node name="RichTextLabel" type="RichTextLabel" parent="."]
+offset_left = -6835.0
+offset_top = 236.0
+offset_right = -6440.0
+offset_bottom = 493.0
+scale = Vector2(15, 15)
+text = "按  \" R \" 以复位相机"
+
+[node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.1, 0.1)
+script = ExtResource("3_ivfej")
+
+[connection signal="draw" from="MapCreater" to="MapCreater" method="WorkFlow"]

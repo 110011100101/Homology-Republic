@@ -11,13 +11,14 @@ config_version=5
 [application]
 
 config/name="同调共和"
-run/main_scene="res://工程素材/脚本/按场景/启动Logo/LaunchScreen.tscn"
+run/main_scene="res://GameFile/StaticData/GameObject/GameScene/LaunchScreen.tscn"
 config/features=PackedStringArray("4.3", "C#", "Forward Plus")
 run/max_fps=165
 
 [autoload]
 
-Data="*res://工程素材/脚本/图书馆/Data.cs"
+Data="*res://GameFile/StaticData/StaticProps/GlobalScript/Data.cs"
+Music="*res://Music.cs"
 
 [display]
 
@@ -36,14 +37,17 @@ project/assembly_name="A游戏开发项目"
 [file_customization]
 
 folder_colors={
+"res://GameFile/": "yellow",
+"res://GameFile/DynamicData/": "orange",
+"res://GameFile/StaticData/": "blue",
+"res://GameFile/StaticData/Script/": "green",
 "res://制作日志/": "blue",
-"res://制作素材包/": "pink",
-"res://工程素材/": "yellow"
+"res://制作素材包/": "pink"
 }
 
 [gui]
 
-theme/custom_font="res://工程素材/字体/凤凰点阵体/加粗.ttf"
+theme/custom_font="res://GameFile/StaticData/GameAssets/Font/凤凰点阵体/加粗.ttf"
 
 [internationalization]
 

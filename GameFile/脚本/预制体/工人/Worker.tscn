@@ -1,0 +1,20 @@
+[gd_scene load_steps=4 format=3 uid="uid://b1jp7rvyhu1wh"]
+
+[ext_resource type="Script" path="res://GameFile/脚本/预制体/工人/工人行为脚本.cs" id="1_6y0qn"]
+[ext_resource type="Texture2D" uid="uid://byue0f16wj3rx" path="res://制作素材包/美术素材/哥布林什么的/美术资产捏/角色/哥布林/PNG/spr_idle_strip9.png" id="4_houp5"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nh4ts"]
+atlas = ExtResource("4_houp5")
+region = Rect2(16, 0, 64, 64)
+
+[node name="Worker" type="Node2D"]
+physics_interpolation_mode = 1
+texture_filter = 1
+script = ExtResource("1_6y0qn")
+
+[node name="临时相机" type="Camera2D" parent="."]
+zoom = Vector2(4, 4)
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+scale = Vector2(3, 3)
+texture = SubResource("AtlasTexture_nh4ts")
