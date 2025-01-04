@@ -1,5 +1,6 @@
 using Godot;
 using RoseIsland.Library.Algorithm.DelaunayTriangle;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
@@ -9,20 +10,20 @@ public partial class DelaunayTriangleTest : Node2D
 {
     private List<Vector2> points;
 
-    public override async void _Ready()
+    public override void _Ready()
     {
         points = new List<Vector2>();
+        Random random = new Random();
 
         GD.Print("开始生成点");
 
         // 手动添加点数据
-        points.Add(new Vector2(400, 200)); // SuperA
-        points.Add(new Vector2(-200, 200)); // SuperB
-        points.Add(new Vector2(100, -300)); // SuperC
-        points.Add(new Vector2(144, 196)); // A
-        points.Add(new Vector2(56, 95)); // B
-        points.Add(new Vector2(156, 153)); // C
-        points.Add(new Vector2(22, 132)); // D
+        for (int i = 0; i < 15; i++)
+        {
+            float x = random.Next(1, 200);
+            float y = random.Next(1, 200);
+            points.Add(new Vector2(x, y));
+        }
 
         foreach (Vector2 temp in points)
         {
@@ -31,16 +32,9 @@ public partial class DelaunayTriangleTest : Node2D
 
         int triangleSize = 200;
 
-        await Task.Run(() => {
-            Godot.Collections.Array godotPoints = new Godot.Collections.Array();
-            foreach (var p in points)
-            {
-                godotPoints.Add(new Godot.Vector2(p.X, p.Y));
-            }
-            CallDeferred("操你的妈", godotPoints, triangleSize, this);
-        });
+        Point point = DelaunayTriangle.Main(points, triangleSize);
 
-        // DrawNet(point, new List<Point>());
+        DrawNet(point, new List<Point>());
     }
 
     public override void _Process(double delta)
@@ -71,10 +65,5 @@ public partial class DelaunayTriangleTest : Node2D
         {
             DrawNet(neighbor, visitedPoints);
         }
-    }
-    
-    public void 操你的妈(Godot.Collections.Array InVectors, int triangleSize, Node2D testNode)
-    {
-        DelaunayTriangle.Main(InVectors, triangleSize, testNode);
     }
 }

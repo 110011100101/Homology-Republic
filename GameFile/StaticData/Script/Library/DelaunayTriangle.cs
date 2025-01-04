@@ -91,25 +91,16 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
         private static Vertex superVertexA;
         private static Vertex superVertexB;
         private static Vertex superVertexC;
-        private static Node2D TestNode;
 
         /// <summary>
         /// 主函数
         /// </summary>
         /// <param name="vertexs">点集</param>
         /// <param name="triangleSize">三角形的大小的基准,实际上就是点生成的范围</param>
-        public static async Task<Point> Main(Godot.Collections.Array InVectors, int triangleSize, Node2D testNode)
+        public static Point Main(List<Vector2> Vectors, int triangleSize)
         {
-            await Task.Delay(1000);
-            List<Vector2> Vectors = new List<Vector2>();
-            foreach (Godot.Vector2 godotVector in InVectors)
-            {
-                Vectors.Add(new Vector2(godotVector.X, godotVector.Y));
-            }
-
-            TestNode = testNode;
             bool isFinish = false;
-            List<Vertex> vertexs = new List<Vertex>();
+            List<Vertex> vertexs = new List<Vertex>();  // 分配给桶之前,存放转化成Vertex的Vector2点
             List<Face> faces = new List<Face>();        // 用于记录所有面
             List<Edge> suspects = new List<Edge>();     // 用于记录可疑边
 
@@ -123,9 +114,6 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
             }
 
             CreateSuperTriangle(faces, triangleSize); // 创建超级三角形
-            
-            await DrawFace(faces);
-            // Debug_PrintFaces(faces, $"{nameof(Main)}", "检查超级三角形是否创建成功");
 
             UpdateBucket(vertexs, faces);            // 对于全家桶, 将全部的点分配给全部的面
 
@@ -151,11 +139,7 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
 
                 if (vertex != null)
                 {
-                    GD.Print("\n插入点\t", vertex.Position);
                     InsertVertex(faces, face, vertex, suspects);
-                    
-                    await DrawFace(faces);
-                    // Debug_PrintFaces(faces, $"{nameof(Main)}", $"这是在插入点{vertex.Position}后的检查");
 
                     // 不断纠正可疑边
                     while (suspects.Count > 0)
@@ -163,13 +147,12 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
                         Edge suspect = suspects[0]; // 取出一个可疑边
 
                         GD.Print("检查可疑边\t", suspect.Start.Position, " to ", suspect.Out.Start.Position);
-                        
+
                         GD.Print("IsFlipNeeded\t", IsFlipNeeded(vertex, suspect));
 
                         if (IsFlipNeeded(vertex, suspect))
                         {
-                            await FlipEdge(faces, suspect, suspects);
-                            await DrawFace(faces);
+                            FlipEdge(faces, suspect, suspects);
                         }
 
                         suspects.RemoveAt(0);
@@ -183,8 +166,8 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
                     isFinish = true;
                 }
             }
-            
-            
+
+
             Debug_PrintFaces(faces, $"{nameof(Main)}", "这是在剔除超三角形之前的检查,");
             RemoveSuperTriangle(faces);
             Debug_PrintFaces(faces, $"{nameof(Main)}", "这是剔除超三角形之后的检查,");
@@ -219,7 +202,7 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
             UpdateEdgeFromFace(faceA, new Edge(face.Edge.Out.Start), new Edge(vertex));
             UpdateEdgeFromFace(faceB, new Edge(face.Edge.Out.Out.Start), new Edge(vertex));
             UpdateEdgeFromFace(faceC, new Edge(face.Edge.In.Out.Start), new Edge(vertex));
-            
+
             // 更新面表信息
             if (!isFaceIn(faces, faceA))
             {
@@ -229,9 +212,9 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
             if (!isFaceIn(faces, faceB))
             {
                 faces.Add(faceB);
-                
+
             }
-            
+
             if (!isFaceIn(faces, faceC))
             {
                 faces.Add(faceC);
@@ -266,18 +249,15 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
         /// <param name="faces">面表，包含所有面的信息。</param>
         /// <param name="edge">需要翻转的边。</param>
         /// <param name="suspects">可疑边列表，用于记录需要检查翻转的边。</param>
-        private static async Task FlipEdge(List<Face> faces, Edge edge, List<Edge> suspects)
-        {  
+        private static void FlipEdge(List<Face> faces, Edge edge, List<Edge> suspects)
+        {
             Face f1 = edge.Face;
             Face f2 = edge.Twin.Face;
             Edge e21 = edge.In;
             Edge e32 = edge.Out;
             Edge e43 = edge.Twin.In;
             Edge e14 = edge.Twin.Out;
-            GD.Print(0);
-            await DrawFace(faces);
 
-            
             faces.Remove(f1);
             faces.Remove(f2);
             Face f3 = new Face(edge);
@@ -285,26 +265,12 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
             faces.Add(f3);
             faces.Add(f4);
 
-            GD.Print(1);
-            await DrawFace(faces);
-            // Debug_PrintFaces(faces, nameof(FlipEdge), "检查进行边翻转操作前的状态");
-
             edge.Start = new Vertex(e43.Start.Position);
             edge.Twin.Start = new Vertex(e21.Start.Position);
 
-            GD.Print(2);
-            await DrawFace(faces);
-            // Debug_PrintFaces(faces, nameof(FlipEdge), "如果这个除了更改的主边跟上面不一样,很可能是更改两条边的指向的操作时有问题");
-            Debug_PrintFaces(new List<Face>() { f3, f4 }, nameof(FlipEdge), "操作之前");
-            
             // f1变成f3,f2变成f4
             UpdateEdgeFromFace(f3, e21, e14, edge.Twin, e21.Twin, e14.Twin);
             UpdateEdgeFromFace(f4, e43, e32, edge, e43.Twin, e32.Twin);
-
-            GD.Print(3);
-            Debug_PrintFaces(new List<Face>() { f3, f4 }, nameof(FlipEdge), "这个是检查涉及到的几个面");
-            await DrawFace(faces);
-            // Debug_PrintFaces(faces, nameof(FlipEdge), "如果这个跟上面不一样,那就是进行顶替操作的时候有问题");
 
             List<Vertex> simpleVertexs = new List<Vertex>();
             List<Face> simpleFaces = new List<Face>();
@@ -395,7 +361,7 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
                 Face face = faces[i];
                 if (face.Edge.Out.Start.Position == superVertexA.Position ||
                     face.Edge.Out.Start.Position == superVertexB.Position ||
-                    face.Edge.Out.Start.Position == superVertexC.Position||
+                    face.Edge.Out.Start.Position == superVertexC.Position ||
                     face.Edge.In.Start.Position == superVertexA.Position ||
                     face.Edge.In.Start.Position == superVertexB.Position ||
                     face.Edge.In.Start.Position == superVertexC.Position ||
@@ -536,17 +502,11 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
         {
             List<Point> points = new List<Point>();
 
-            // Debug_PrintFaces(faces, $"{nameof(ToPoint)}", "将Vertex转成Point前的检查,如果这个跟下面末尾输出的不一样,很可能是InsertPoint方法有问题");
-
             foreach (Face face in faces)
             {
                 InsertPoint(points, face);
             }
 
-            Debug_PrintFaces(faces, $"{nameof(ToPoint)}", "这是在程序的末尾");
-
-            PrintNet(points[0], new List<Point>());
-            
             return points[0];
         }
 
@@ -570,7 +530,7 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
                 p2 = new Point(v2);
                 points.Add(p2);
             }
-            
+
             Point p3 = points.Find(p => p.Position == v3);
             if (p3 == null)
             {
@@ -619,59 +579,31 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
                 GD.Print($"----------{face.Edge.Start.Position}----------");
                 GD.Print($"Edge:\t{face.Edge.Start.Position}");
                 if (face.Edge.Twin != null)
-                GD.Print($"Twin:\t{face.Edge.Twin.Start.Position}");
+                    GD.Print($"Twin:\t{face.Edge.Twin.Start.Position}");
                 else
-                GD.Print("Twin:\tnull");
+                    GD.Print("Twin:\tnull");
                 GD.Print($"Out:\t{face.Edge.Out.Start.Position}");
                 GD.Print($"In:\t\t{face.Edge.In.Start.Position}");
                 GD.Print($"Face:\t{face.Edge.Face.Edge.Start.Position}");
                 GD.Print($"---OUT-->");
                 GD.Print($"Edge:\t{face.Edge.Out.Start.Position}");
-                if(face.Edge.Out.Twin != null)
-                GD.Print($"Twin:\t{face.Edge.Out.Twin.Start.Position}");
+                if (face.Edge.Out.Twin != null)
+                    GD.Print($"Twin:\t{face.Edge.Out.Twin.Start.Position}");
                 else
-                GD.Print("Twin:\tnull");
+                    GD.Print("Twin:\tnull");
                 GD.Print($"Out:\t{face.Edge.Out.Out.Start.Position}");
                 GD.Print($"In:\t\t{face.Edge.Out.In.Start.Position}");
                 GD.Print($"Face:\t{face.Edge.Out.Face.Edge.Start.Position}");
                 GD.Print($"---IN-->");
                 GD.Print($"Edge:\t{face.Edge.In.Start.Position}");
                 if (face.Edge.In.Twin != null)
-                GD.Print($"Twin:\t{face.Edge.In.Twin.Start.Position}");
+                    GD.Print($"Twin:\t{face.Edge.In.Twin.Start.Position}");
                 else
-                GD.Print("Twin:\tnull");
+                    GD.Print("Twin:\tnull");
                 GD.Print($"Out:\t{face.Edge.In.Out.Start.Position}");
                 GD.Print($"In:\t\t{face.Edge.In.In.Start.Position}");
                 GD.Print($"Face:\t{face.Edge.In.Face.Edge.Start.Position}");
                 GD.Print($"--=--------{where}--------=--");
-            }
-        }
-
-        private static void PrintNet(Point point, List<Point> visitedPoints)
-        {
-            // 首先检查当前点是否已经访问过
-            if (visitedPoints.Contains(point))
-            {
-                return;
-            }
-
-            // 标记当前点为已访问
-            visitedPoints.Add(point);
-
-            // 打印当前点的信息
-            GD.Print($"点: {point.Position}");
-
-            // 打印当前点的邻居点信息
-            GD.Print("邻居:");
-            foreach (Point neighbor in point.Neighbors)
-            {
-                GD.Print($"  {neighbor.Position}");
-            }
-
-            // 遍历当前点的所有邻居点，并递归调用 PrintNet 函数
-            foreach (Point neighbor in point.Neighbors)
-            {
-                PrintNet(neighbor, visitedPoints);
             }
         }
 
@@ -700,7 +632,7 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
             // {
             //     GD.Print(point);
             // }
-            
+
             if (face2Points.Contains(face1Points[0]) && face2Points.Contains(face1Points[1]) && face2Points.Contains(face1Points[2]))
             {
                 // GD.Print("isFaceEqule:\ttrue");
@@ -725,77 +657,6 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
             }
             // GD.Print("isFaceIn:\tfalse");
             return false;
-        }
-
-        private static async Task DrawFace(List<Face> faces)
-        {
-            // 重置图
-            Node2D node2D = new Node2D();
-            
-            if (TestNode.GetChildCount() > 0)
-            {
-                TestNode.RemoveChild(TestNode.GetChild(0));
-            }
-
-            TestNode.AddChild(node2D);
-
-            // 绘制新图
-            foreach (Face face in faces)
-            {
-                // 取出坐标
-                Godot.Vector2 v1 = new Godot.Vector2(face.Edge.Start.Position.X, face.Edge.Start.Position.Y);
-                Godot.Vector2 v2 = new Godot.Vector2(face.Edge.Out.Start.Position.X, face.Edge.Out.Start.Position.Y);
-                Godot.Vector2 v3 = new Godot.Vector2(face.Edge.In.Start.Position.X, face.Edge.In.Start.Position.Y);
-
-                // 构建三个点
-                Sprite2D p1 = new Sprite2D() { Name = $"{v1}", Position = v1, Texture = (Texture2D)GD.Load("res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/FeaturePoints.png"), Scale = new Godot.Vector2(0.1f, 0.1f) };
-                Sprite2D p2 = new Sprite2D() { Name = $"{v2}", Position = v2, Texture = (Texture2D)GD.Load("res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/FeaturePoints.png"), Scale = new Godot.Vector2(0.1f, 0.1f) }; 
-                Sprite2D p3 = new Sprite2D() { Name = $"{v3}", Position = v3, Texture = (Texture2D)GD.Load("res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/FeaturePoints.png"), Scale = new Godot.Vector2(0.1f, 0.1f) };
-                
-                // 构建边
-                Line2D L1 = new Line2D() { Name = $"{v1}-{v2}", Points = new Godot.Vector2[]{ v1, v2 }, Width = 1 };
-                Line2D L2 = new Line2D() { Name = $"{v2}-{v3}", Points = new Godot.Vector2[]{ v2, v3 }, Width = 1 };
-                Line2D L3 = new Line2D() { Name = $"{v3}-{v1}", Points = new Godot.Vector2[]{ v3, v1 }, Width = 1 };
-
-                // 绘制三个点
-                if (!node2D.HasNode($"{p1.Name}"))
-                {
-                    node2D.AddChild(p1);
-                    // await Task.Delay(500);
-                }
-                    
-        
-                if (!node2D.HasNode($"{p2.Name}"))
-                {
-                    node2D.AddChild(p2); 
-                    // await Task.Delay(500);
-                }
-
-                if (!node2D.HasNode($"{p3.Name}"))
-                {
-                    node2D.AddChild(p3);
-                    // await Task.Delay(500);
-                }
-
-                if (!node2D.HasNode($"{L1.Name}"))
-                {
-                    node2D.AddChild(L1);
-                    // await Task.Delay(500);
-                }
-
-                if (!node2D.HasNode($"{L2.Name}"))
-                {
-                    node2D.AddChild(L2);
-                    // await Task.Delay(500);
-                }
-
-                if (!node2D.HasNode($"{L3.Name}"))
-                {
-                    node2D.AddChild(L3);
-                    // await Task.Delay(500);
-                }
-            }
-            await Task.Delay(2000);
         }
     };
 }
