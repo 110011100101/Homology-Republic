@@ -3,6 +3,7 @@ using Godot.Collections;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,7 +25,7 @@ public partial class MapCreater : Node2D
 	{
 		// init
 		data = GetNode<Data>("/root/Data");
-		notice = GetNode<Notice_BasePlanetCreatingMenu>("/root/大地图生成/Notice");
+		notice = GetNode<Notice_BasePlanetCreatingMenu>("/root/BasePlanetCreatingMenu/Notice");
 		GlobalPosition = new Vector2(0, -(CoordinateConverter.ToRealPosition(new Vector2(data.MapSize, data.MapSize)).Y / 2)); // 把 MapSize 转成真实坐标后取一半
 
 		notice.OutputNotice("地图生成器准备完毕");
@@ -42,7 +43,6 @@ public partial class MapCreater : Node2D
 		// 生成地基
 		notice.OutputNotice("开始生成地基");
 
-		// 按行并行生成
 		for (int i = 0; i < data.MapSize; i++)
 		for (int j = 0; j < data.MapSize; j++)
 			_CreateBlock(new Vector2(i, j));
@@ -65,7 +65,7 @@ public partial class MapCreater : Node2D
 
 		notice.OutputNotice("特征点放置完毕");
 
-
+		await Task.Delay(1000);
 		notice.OutputNotice("开始收敛");
 
 		FeaturePoints = _AddFeaturePoints(FeatureSet);
@@ -79,7 +79,7 @@ public partial class MapCreater : Node2D
 		// BlockBlones; // 这个是最终的特征点字典
 		notice.OutputNotice("开始上色");
 		
-		FeaturePoints = _SortFeature(FeaturePoints); // 确保特征点是按距离排序的
+		// FeaturePoints = _SortFeature(FeaturePoints, data.MapSize); // 确保特征点是按距离排序的
 		color_dic = _UpdateColor(color_pool, FeaturePoints); // 更新颜色分配
 
 		foreach (Node temp in GetChildren())
@@ -159,7 +159,7 @@ public partial class MapCreater : Node2D
 	private void _CreateBlock(Vector2 BlockPosition)
 	{
 		// init
-		Block block = ((PackedScene)GD.Load("res://工程素材/脚本/预制体/Block/Block.tscn")).Instantiate<Block>();
+		Block block = ((PackedScene)GD.Load("res://GameFile/StaticData/GameObject/Prefeb/Block/Block.tscn")).Instantiate<Block>(); // TODO:不能出现文本
 
 		block.Position = CoordinateConverter.ToRealPosition(BlockPosition);
 		block.Name = $"{BlockPosition}";
@@ -176,7 +176,7 @@ public partial class MapCreater : Node2D
 			{
 				Position = CoordinateConverter.ToRealPosition(position),
 				Name = $"FeaturePoint{n}",
-				Texture = (Texture2D)GD.Load("res://工程素材/材质包/方格概念/tiles/FeaturePoints.png"),
+				Texture = (Texture2D)GD.Load("res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/FeaturePoints.png"), // TODO：这里没做材质包的动态适配
 			};
 			FeaturePoints.Add(FeaturePoint);
 			AddChild(FeaturePoint);
@@ -308,10 +308,9 @@ public partial class MapCreater : Node2D
 		return new Vector2(averageX, averageY);
 	}
 
-
-	private Array<Sprite2D> _SortFeature(Array<Sprite2D> FeaturePoints)
-	{
-		// 准备采用德劳内三角剖分
-	}
+	// private Array<Sprite2D> _SortFeature(Array<Sprite2D> FeaturePoints, int MapSize)
+	// {
+		
+	// }
 }
 

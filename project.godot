@@ -12,7 +12,7 @@ config_version=5
 
 config/name="同调共和"
 run/main_scene="res://GameFile/StaticData/GameObject/GameScene/LaunchScreen.tscn"
-config/features=PackedStringArray("4.3", "C#", "Forward Plus")
+config/features=PackedStringArray("4.4", "C#", "Forward Plus")
 run/max_fps=165
 
 [autoload]

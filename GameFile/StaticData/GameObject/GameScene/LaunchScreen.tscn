@@ -1,7 +1,8 @@
-[gd_scene load_steps=5 format=3 uid="uid://2jkka3coq5fa"]
+[gd_scene load_steps=6 format=3 uid="uid://2jkka3coq5fa"]
 
 [ext_resource type="Texture2D" uid="uid://dtkjmxkqhxn0f" path="res://GameFile/StaticData/GameAssets/UI_Texture/SpriteSheet.png" id="1_5lid2"]
-[ext_resource type="Script" path="res://GameFile/StaticData/Script/UI/TitleGroup_LaunchScreen.cs" id="2_wbh56"]
+[ext_resource type="Script" uid="uid://chuucn3ge5iye" path="res://GameFile/StaticData/Script/UI/TitleGroup_LaunchScreen.cs" id="2_wbh56"]
+[ext_resource type="Texture2D" uid="uid://dgks8c4tvqnln" path="res://GameFile/StaticData/GameAssets/UI_Texture/Logo.png" id="3_fp3rw"]
 [ext_resource type="FontFile" uid="uid://cr8tijpmqscfm" path="res://GameFile/StaticData/GameAssets/Font/凤凰点阵体/加粗.ttf" id="4_56pwg"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_n13cy"]
@@ -22,6 +23,7 @@ script = ExtResource("2_wbh56")
 
 [node name="Logo" type="Sprite2D" parent="Group"]
 position = Vector2(-370, 0)
+texture = ExtResource("3_fp3rw")
 
 [node name="Titile" type="Label" parent="Group"]
 anchors_preset = 4

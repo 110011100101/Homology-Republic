@@ -3,17 +3,17 @@
 [ext_resource type="Texture2D" uid="uid://bh4h1pjhyf6im" path="res://制作素材包/美术素材/场景美术/主菜单美术素材/纯色背景.jpg" id="1_j7h6n"]
 [ext_resource type="Texture2D" uid="uid://begs78auh5yn0" path="res://制作素材包/美术素材/场景美术/创建世界界面美术素材/120帧60行.png" id="2_2cjpb"]
 [ext_resource type="FontFile" uid="uid://cr8tijpmqscfm" path="res://GameFile/StaticData/GameAssets/Font/凤凰点阵体/加粗.ttf" id="3_gd8m5"]
-[ext_resource type="Script" path="res://GameFile/StaticData/Script/UI/Lable_CreatePlanetMenu_PreViewPlanetName.cs" id="4_8n2jl"]
+[ext_resource type="Script" uid="uid://cn7nxx2iu0j0h" path="res://GameFile/StaticData/Script/UI/Lable_CreatePlanetMenu_PreViewPlanetName.cs" id="4_8n2jl"]
 [ext_resource type="Texture2D" uid="uid://e0ryoflrfw0e" path="res://制作素材包/美术素材/UI/Complete_GUI_Essential_Pack_Free_Version/01_Basic_Collection/01_Flat_Theme/Sprites/UI_Flat_Button_Large_Lock_01a1.png" id="5_ni8mc"]
 [ext_resource type="Texture2D" uid="uid://bsodiqxalptt8" path="res://制作素材包/美术素材/UI/Complete_GUI_Essential_Pack_Free_Version/01_Basic_Collection/01_Flat_Theme/Sprites/UI_Flat_Button_Large_Lock_01a3.png" id="6_qsooj"]
 [ext_resource type="Texture2D" uid="uid://cevd5cnoh12di" path="res://制作素材包/美术素材/UI/Complete_GUI_Essential_Pack_Free_Version/01_Basic_Collection/01_Flat_Theme/Sprites/UI_Flat_Button_Large_Lock_01a2.png" id="7_0hydw"]
-[ext_resource type="Script" path="res://GameFile/StaticData/Script/UI/ChangeSceneButton_CreaterPlanetMenu_PlanetSetting.cs" id="8_q7mho"]
-[ext_resource type="Script" path="res://GameFile/StaticData/Script/Class/ButtonLable.cs" id="9_avao7"]
-[ext_resource type="Script" path="res://GameFile/StaticData/Script/UI/ChangeSceneButton_CreatePlanetMenu_ToBasePlanetCreatingMenu.cs" id="10_2r2et"]
-[ext_resource type="Script" path="res://GameFile/StaticData/Script/UI/ChangeSceneButton_CreatePlanetMenu_BackToMainMenu.cs" id="11_e0pql"]
-[ext_resource type="Script" path="res://GameFile/StaticData/Script/UI/Group_CreatePlanetMenu_MapInformation.cs" id="12_x1pt0"]
-[ext_resource type="Script" path="res://GameFile/StaticData/Script/UI/RichTextLabel_CreatePlanetMenu_MapSize.cs" id="13_ucfnu"]
-[ext_resource type="Script" path="res://GameFile/StaticData/Script/UI/SpinBox_CreatePlanetMenu_GetNumberOfPltes.cs" id="14_6mm6e"]
+[ext_resource type="Script" uid="uid://bv0b5ww7nns8w" path="res://GameFile/StaticData/Script/UI/ChangeSceneButton_CreaterPlanetMenu_PlanetSetting.cs" id="8_q7mho"]
+[ext_resource type="Script" uid="uid://o2ovt82noydu" path="res://GameFile/StaticData/Script/Class/ButtonLable.cs" id="9_avao7"]
+[ext_resource type="Script" uid="uid://cpo2qb65uiig6" path="res://GameFile/StaticData/Script/UI/ChangeSceneButton_CreatePlanetMenu_ToBasePlanetCreatingMenu.cs" id="10_2r2et"]
+[ext_resource type="Script" uid="uid://jflpdwr02wig" path="res://GameFile/StaticData/Script/UI/ChangeSceneButton_CreatePlanetMenu_BackToMainMenu.cs" id="11_e0pql"]
+[ext_resource type="Script" uid="uid://dti8yi1lxruri" path="res://GameFile/StaticData/Script/UI/Group_CreatePlanetMenu_MapInformation.cs" id="12_x1pt0"]
+[ext_resource type="Script" uid="uid://cqqwb53hauf7e" path="res://GameFile/StaticData/Script/UI/RichTextLabel_CreatePlanetMenu_MapSize.cs" id="13_ucfnu"]
+[ext_resource type="Script" uid="uid://cx4d1sfbyh62b" path="res://GameFile/StaticData/Script/UI/SpinBox_CreatePlanetMenu_GetNumberOfPltes.cs" id="14_6mm6e"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_f8vuo"]
 atlas = ExtResource("2_2cjpb")
@@ -50617,6 +50617,7 @@ max_value = 1000.0
 value = 50.0
 update_on_text_changed = true
 suffix = "Block"
+select_all_on_focus = true
 
 [node name="OceanToLandRatio" type="Label" parent="MapInformationGroup/PlanetParameter"]
 texture_filter = 1
@@ -50640,6 +50641,7 @@ offset_right = 270.0
 offset_bottom = 29.0
 update_on_text_changed = true
 suffix = "%"
+select_all_on_focus = true
 
 [node name="NumberOfPltes" type="Label" parent="MapInformationGroup/PlanetParameter"]
 texture_filter = 1
@@ -50665,6 +50667,7 @@ min_value = 1.0
 max_value = 10.0
 value = 7.0
 update_on_text_changed = true
+select_all_on_focus = true
 script = ExtResource("14_6mm6e")
 
 [connection signal="text_changed" from="MapInformationGroup/PlanetName/GetPlanetName" to="PlanetAnimation/PreViewPlanetName" method="OnTextChange"]

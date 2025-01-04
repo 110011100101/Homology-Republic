@@ -82,9 +82,9 @@ public static partial class Astar
     private static bool isWalkable(Dictionary<Vector3, 上下文> Information, Vector3 Stap)
     {
         bool isGround = Information[Stap].GroundMaterial != null;
-        bool isObjects = Information[Stap].Items.Count() > 0;
+        // bool isObjects = Information[Stap].Items.Count() > 0;
 
-        return isGround && !isObjects;
+        return isGround;
     }
 
     private static bool isStepExist(Dictionary<Vector3, 上下文> Information, Vector3 Stap)

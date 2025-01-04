@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://b1jp7rvyhu1wh"]
 
-[ext_resource type="Script" path="res://GameFile/脚本/预制体/工人/工人行为脚本.cs" id="1_6y0qn"]
+[ext_resource type="Script" uid="uid://c3f2u5bfthplr" path="res://GameFile/脚本/预制体/工人/工人行为脚本.cs" id="1_6y0qn"]
 [ext_resource type="Texture2D" uid="uid://byue0f16wj3rx" path="res://制作素材包/美术素材/哥布林什么的/美术资产捏/角色/哥布林/PNG/spr_idle_strip9.png" id="4_houp5"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_nh4ts"]

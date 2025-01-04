@@ -17,7 +17,7 @@ public partial class Block : Sprite2D
 			floorMaterial = value;
 
 			// 更新材质图片
-			Texture = (Texture2D)GD.Load(value.strFloorTexturePath);
+			Texture = (Texture2D)GD.Load(value.FloorTexturePath);
 		}
 	}
 	private GameMaterial groundMaterial;
@@ -32,7 +32,7 @@ public partial class Block : Sprite2D
 			groundMaterial = value;
 
 			// 更新材质图片
-			Texture = (Texture2D)GD.Load(value.strGroundTexturePath);
+			Texture = (Texture2D)GD.Load(value.GroundTexturePath);
 		}
 	}
 
@@ -61,19 +61,6 @@ public partial class Block : Sprite2D
 		{
 			// 这里写更改逻辑
 			GroundMaterial = targetMaterial;
-		}
-	}
-
-	public void AddItemAbove(Item NewItem)
-	{
-		AddChild(NewItem);
-	}
-
-	public void RemoveItemAbove(Item item)
-	{
-		if (item != null)
-		{
-			item.QueueFree();
 		}
 	}
 }

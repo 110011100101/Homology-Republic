@@ -1,11 +1,10 @@
-[gd_scene load_steps=7 format=3 uid="uid://c4840sposnobh"]
+[gd_scene load_steps=6 format=3 uid="uid://c4840sposnobh"]
 
-[ext_resource type="Script" path="res://GameFile/StaticData/GameObject/TastScene/视差测试专用地图生成脚本.cs" id="1_j7diu"]
-[ext_resource type="Script" path="res://GameFile/StaticData/GameObject/TastScene/视差地图相机专用脚本.cs" id="2_ykcg1"]
+[ext_resource type="Script" uid="uid://doqoo0rgd1xob" path="res://GameFile/StaticData/Script/Test/视差测试专用地图生成脚本.cs" id="1_j7diu"]
+[ext_resource type="Script" uid="uid://bawa5s1mqv1h3" path="res://GameFile/StaticData/Script/Test/视差地图相机专用脚本.cs" id="2_ykcg1"]
 [ext_resource type="FontFile" uid="uid://cr8tijpmqscfm" path="res://GameFile/StaticData/GameAssets/Font/凤凰点阵体/加粗.ttf" id="3_iam6w"]
-[ext_resource type="Script" path="res://GameFile/StaticData/GameObject/TastScene/参数监控.cs" id="3_kg6gv"]
-[ext_resource type="Texture2D" uid="uid://bjbjw73kbjpvf" path="res://GameFile/材质包/Tile/Sprite-0001.png" id="4_rywyr"]
-[ext_resource type="Script" path="res://GameFile/StaticData/GameObject/TastScene/按键脚本.cs" id="5_o8jw8"]
+[ext_resource type="Script" uid="uid://cg65ykahvoyda" path="res://GameFile/StaticData/Script/Test/参数监控.cs" id="3_kg6gv"]
+[ext_resource type="Script" uid="uid://b2k8n4ycu8io" path="res://GameFile/StaticData/Script/Test/按键脚本.cs" id="5_o8jw8"]
 
 [node name="#00001 视差地图测试场景" type="Node2D"]
 physics_interpolation_mode = 1
@@ -41,9 +40,6 @@ script = ExtResource("3_kg6gv")
 [node name="Camera2D" type="Camera2D" parent="."]
 process_callback = 0
 script = ExtResource("2_ykcg1")
-
-[node name="Sprite2D" type="Sprite2D" parent="Camera2D"]
-texture = ExtResource("4_rywyr")
 
 [node name="按键脚本挂载" type="Node2D" parent="."]
 script = ExtResource("5_o8jw8")

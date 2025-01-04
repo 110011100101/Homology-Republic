@@ -26,7 +26,7 @@ public partial class TitleGroup_LaunchScreen : Node2D
 		for (float i = 0; i < 1; i += 0.01f)
 		{
 			CallDeferred("_SetModulate", new Color(1, 1, 1, i));
-			Thread.Sleep(10);
+			Thread.Sleep(30);
 		}
 
 		int _ShakeHandCounter = 0;

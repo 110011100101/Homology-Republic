@@ -1,8 +1,8 @@
 [gd_scene load_steps=4 format=3 uid="uid://djmp5mfxtxpap"]
 
-[ext_resource type="Script" path="res://GameFile/StaticData/Script/Scripts/Creater/MapCreater.cs" id="1_rr6du"]
-[ext_resource type="Script" path="res://GameFile/StaticData/Script/UI/Notice_BasePlanetCreatingMenu.cs" id="2_ihpf2"]
-[ext_resource type="Script" path="res://GameFile/StaticData/Script/UI/Camera_BasePlanetCreatingMenu.cs" id="3_ivfej"]
+[ext_resource type="Script" uid="uid://7xjvxudec84h" path="res://GameFile/StaticData/Script/Scripts/Creater/MapCreater.cs" id="1_rr6du"]
+[ext_resource type="Script" uid="uid://bm2vbltx5tngo" path="res://GameFile/StaticData/Script/UI/Notice_BasePlanetCreatingMenu.cs" id="2_ihpf2"]
+[ext_resource type="Script" uid="uid://bnnmelkjlq4s7" path="res://GameFile/StaticData/Script/UI/Camera_BasePlanetCreatingMenu.cs" id="3_ivfej"]
 
 [node name="BasePlanetCreatingMenu" type="Node2D"]
 texture_filter = 1
