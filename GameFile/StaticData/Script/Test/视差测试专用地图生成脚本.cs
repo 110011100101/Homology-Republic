@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 
 public partial class 视差测试专用地图生成脚本 : Node2D
 {
+	public string packName { get; set; } = "GridConceptPack";
 	public Dictionary<Vector3,上下文> Information { get; set; } = new Dictionary<Vector3, 上下文>();
 
 	public List<Block> BlocksPrefab { get; set; } = new List<Block>();
@@ -49,7 +50,7 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 	}
 
 	public void DefferMapCreater(Vector3 position){
-		MapCreater(position, new wood());
+		MapCreater(position, new wood(packName));
 	}
 
 	/// <summary>

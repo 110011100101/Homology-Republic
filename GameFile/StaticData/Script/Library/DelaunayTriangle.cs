@@ -1,13 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
 using Godot;
 using RoseIsland.Library.CalculationTool.Determinant;
-using Vector2 = System.Numerics.Vector2;
+using Vector2 = Godot.Vector2;
 
 // -------------------------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------------------------
@@ -22,12 +17,20 @@ using Vector2 = System.Numerics.Vector2;
 // - vertex: 表示一个二维平面上的点。
 // - edge: 表示一条边。
 // - face: 表示一个平面。
-// - DelaunayTriangle: 静态类，包含实现 Delaunay 三角剖分的核心方法。
-//   - Main: 主函数，初始化并执行 Delaunay 三角剖分。
-//   - InsertVertex: 插入点到当前的三角剖分中。
-//   - FlipEdge: 翻转指定的边以优化三角剖分。
-//   - IsFlipNeeded: 判断是否需要翻转指定的边。
-//   - CreateSuperTriangle: 创建一个超级三角形作为初始三角剖分的基础。
+// 
+// - Main: 程序的入口
+// - InsertVertex: 插入一个点到三角剖分中
+// - FlipEdge: 翻转一个边
+// - CreateSuperTriangle: 创建超级三角形
+// - RemoveSuperTriangle: 移除超级三角形
+// - UpdateBucket: 更新桶
+// - UpdateEdgeFromFace: 基于面更改边的参数
+// - SetTwin: 寻找并设置伴生边
+// - ToPoint: 将Vertex转化为Point
+// - InsertPoint: 将一个点插入Point表中
+// - isFaceEqule: 判断两个面是否是同一个面
+// - IsInFace: 判断一个点是否在某个面上
+// - IsFlipNeeded: 判断是否需要翻转边
 // 
 // -------------------------------------------------------------------------------------------------------
 // 
@@ -92,11 +95,6 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
         private static Vertex superVertexB;
         private static Vertex superVertexC;
 
-        /// <summary>
-        /// 主函数
-        /// </summary>
-        /// <param name="vertexs">点集</param>
-        /// <param name="triangleSize">三角形的大小的基准,实际上就是点生成的范围</param>
         public static Point Main(List<Vector2> Vectors, int triangleSize)
         {
             bool isFinish = false;
@@ -104,7 +102,7 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
             List<Face> faces = new List<Face>();        // 用于记录所有面
             List<Edge> suspects = new List<Edge>();     // 用于记录可疑边
 
-            // 将所有point转化为Vertex
+            // 将所有传入的二维向量转化为Vertex类型
             foreach (Vector2 temp in Vectors)
             {
                 if (!vertexs.Contains(new Vertex(temp)))
@@ -113,9 +111,10 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
                 }
             }
 
-            CreateSuperTriangle(faces, triangleSize); // 创建超级三角形
+            CreateSuperTriangle(faces, triangleSize); 
 
-            UpdateBucket(vertexs, faces);            // 对于全家桶, 将全部的点分配给全部的面
+            // 统一分配所有的点
+            UpdateBucket(vertexs, faces);            
 
             while (!isFinish)
             {
@@ -167,21 +166,18 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
                 }
             }
 
-
-            Debug_PrintFaces(faces, $"{nameof(Main)}", "这是在剔除超三角形之前的检查,");
             RemoveSuperTriangle(faces);
-            Debug_PrintFaces(faces, $"{nameof(Main)}", "这是剔除超三角形之后的检查,");
 
             return ToPoint(faces);
         }
 
         /// <summary>
-        /// 将一个点插入到当前的三角剖分中。
+        /// 将一个点插入到当前的三角剖分中
         /// </summary>
-        /// <param name="faces">面表，包含所有面的信息。</param>
-        /// <param name="face">待插入点所在的面。</param>
-        /// <param name="vertex">待插入的点。</param>
-        /// <param name="suspects">可疑边列表，用于记录需要检查翻转的边。</param>
+        /// <param name="faces">面表，包含所有面的信息</param>
+        /// <param name="face">待插入点所在的面</param>
+        /// <param name="vertex">待插入的点</param>
+        /// <param name="suspects">可疑边列表，用于记录需要检查翻转的边</param>
         private static void InsertVertex(List<Face> faces, Face face, Vertex vertex, List<Edge> suspects)
         {
             // 属面转移三边到三个新面
@@ -197,8 +193,6 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
 
             // 针对每个面开始链接
             // 链接逻辑：原边 --> 原 Out 的 startVertex 到 新点 --> 新点到原边 startVertex
-            // 更新一波信息
-            // FIXME: 这个有问题会导致faces的初始值跟FaceA一样
             UpdateEdgeFromFace(faceA, new Edge(face.Edge.Out.Start), new Edge(vertex));
             UpdateEdgeFromFace(faceB, new Edge(face.Edge.Out.Out.Start), new Edge(vertex));
             UpdateEdgeFromFace(faceC, new Edge(face.Edge.In.Out.Start), new Edge(vertex));
@@ -228,8 +222,7 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
 
             faces.Remove(face);
 
-            // 分桶
-            // 创建简单的面表和点集
+            // 创建更加简单的面表和点集
             List<Vertex> simpleVertexs = new List<Vertex>();
             List<Face> simpleFaces = new List<Face>();
 
@@ -251,8 +244,12 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
         /// <param name="suspects">可疑边列表，用于记录需要检查翻转的边。</param>
         private static void FlipEdge(List<Face> faces, Edge edge, List<Edge> suspects)
         {
+            // 这里不能设置成别的引用,必须是统一edge的参数
+            // 这样设置后参数会更加直观(当然是对照实物图的时候)
             Face f1 = edge.Face;
             Face f2 = edge.Twin.Face;
+            Face f3 = new Face(edge);
+            Face f4 = new Face(edge.Twin);
             Edge e21 = edge.In;
             Edge e32 = edge.Out;
             Edge e43 = edge.Twin.In;
@@ -260,8 +257,6 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
 
             faces.Remove(f1);
             faces.Remove(f2);
-            Face f3 = new Face(edge);
-            Face f4 = new Face(edge.Twin);
             faces.Add(f3);
             faces.Add(f4);
 
@@ -289,51 +284,6 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
             suspects.Add(e43);
         }
 
-        /// <summary>
-        /// 判断是否需要翻转
-        /// </summary>
-        /// <param name="baseVertex">基点<para><b>通常为插入点</b></para></param>
-        /// <param name="suspect">可疑边</param>
-        /// <returns>Bool</returns>
-        private static bool IsFlipNeeded(Vertex baseVertex, Edge suspect)
-        {
-            if (suspect.Twin != null)
-            {
-                // 获取三角形的三个顶点坐标
-                double x0 = suspect.Start.Position.X;
-                double y0 = suspect.Start.Position.Y;
-                double x1 = baseVertex.Position.X;
-                double y1 = baseVertex.Position.Y;
-                double x2 = suspect.Out.Start.Position.X;
-                double y2 = suspect.Out.Start.Position.Y;
-
-                // 获取需要判断的点坐标
-                double px = suspect.Twin.In.Start.Position.X;
-                double py = suspect.Twin.In.Start.Position.Y;
-
-                // 计算外接圆的圆心和半径
-                double a1 = x1 - x0;
-                double b1 = y1 - y0;
-                double c1 = (a1 * a1 + b1 * b1) / 2.0;
-
-                double a2 = x2 - x0;
-                double b2 = y2 - y0;
-                double c2 = (a2 * a2 + b2 * b2) / 2.0;
-
-                double d = a1 * b2 - a2 * b1;
-                double Cntrx = x0 + (c1 * b2 - c2 * b1) / d;
-                double Cntry = y0 + (a1 * c2 - a2 * c1) / d;
-
-                double Radius_2 = Math.Pow(x0 - Cntrx, 2) + Math.Pow(y0 - Cntry, 2);
-
-                // 计算点 P 到圆心的距离平方
-                double Dist_P_Cntr_2 = Math.Pow(px - Cntrx, 2) + Math.Pow(py - Cntry, 2);
-
-                // 判断点 P 是否在圆内或圆上
-                return Dist_P_Cntr_2 <= Radius_2;
-            }
-            return false;
-        }
 
         /// <summary>
         /// 创建超三角形
@@ -517,93 +467,55 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
             Vector2 v3 = face.Edge.Out.Start.Position;
 
             // 先确保每个点都存在
-            Point p1 = points.Find(p => p.Position == v1);
+            Point p1 = points.Find(p => p.Position.Equals(v1));
             if (p1 == null)
             {
                 p1 = new Point(v1);
                 points.Add(p1);
             }
 
-            Point p2 = points.Find(p => p.Position == v2);
+            Point p2 = points.Find(p => p.Position.Equals(v2));
             if (p2 == null)
             {
                 p2 = new Point(v2);
                 points.Add(p2);
             }
 
-            Point p3 = points.Find(p => p.Position == v3);
+            Point p3 = points.Find(p => p.Position.Equals(v3));
             if (p3 == null)
             {
                 p3 = new Point(v3);
                 points.Add(p3);
             }
 
-            if (p1.Neighbors.Find(p => p.Position == v2) == null)
+            if (p1.Neighbors.Find(p => p.Position.Equals(v2)) == null)
             {
                 p1.Neighbors.Add(p2);
             }
 
-            if (p1.Neighbors.Find(p => p.Position == v3) == null)
+            if (p1.Neighbors.Find(p => p.Position.Equals(v3)) == null)
             {
                 p1.Neighbors.Add(p3);
             }
 
-            if (p2.Neighbors.Find(p => p.Position == v1) == null)
+            if (p2.Neighbors.Find(p => p.Position.Equals(v1)) == null)
             {
                 p2.Neighbors.Add(p1);
             }
 
-            if (p2.Neighbors.Find(p => p.Position == v3) == null)
+            if (p2.Neighbors.Find(p => p.Position.Equals(v3)) == null)
             {
                 p2.Neighbors.Add(p3);
             }
 
-            if (p3.Neighbors.Find(p => p.Position == v1) == null)
+            if (p3.Neighbors.Find(p => p.Position.Equals(v1)) == null)
             {
                 p3.Neighbors.Add(p1);
             }
 
-            if (p3.Neighbors.Find(p => p.Position == v2) == null)
+            if (p3.Neighbors.Find(p => p.Position.Equals(v2)) == null)
             {
                 p3.Neighbors.Add(p2);
-            }
-        }
-
-        private static void Debug_PrintFaces(List<Face> faces, string where, string information = null)
-        {
-            GD.Print($"\n{information}\n");
-            GD.Print($"共 ({faces.Count}) 个面");
-            foreach (Face face in faces)
-            {
-                GD.Print($"--=--------{where}--------=--");
-                GD.Print($"----------{face.Edge.Start.Position}----------");
-                GD.Print($"Edge:\t{face.Edge.Start.Position}");
-                if (face.Edge.Twin != null)
-                    GD.Print($"Twin:\t{face.Edge.Twin.Start.Position}");
-                else
-                    GD.Print("Twin:\tnull");
-                GD.Print($"Out:\t{face.Edge.Out.Start.Position}");
-                GD.Print($"In:\t\t{face.Edge.In.Start.Position}");
-                GD.Print($"Face:\t{face.Edge.Face.Edge.Start.Position}");
-                GD.Print($"---OUT-->");
-                GD.Print($"Edge:\t{face.Edge.Out.Start.Position}");
-                if (face.Edge.Out.Twin != null)
-                    GD.Print($"Twin:\t{face.Edge.Out.Twin.Start.Position}");
-                else
-                    GD.Print("Twin:\tnull");
-                GD.Print($"Out:\t{face.Edge.Out.Out.Start.Position}");
-                GD.Print($"In:\t\t{face.Edge.Out.In.Start.Position}");
-                GD.Print($"Face:\t{face.Edge.Out.Face.Edge.Start.Position}");
-                GD.Print($"---IN-->");
-                GD.Print($"Edge:\t{face.Edge.In.Start.Position}");
-                if (face.Edge.In.Twin != null)
-                    GD.Print($"Twin:\t{face.Edge.In.Twin.Start.Position}");
-                else
-                    GD.Print("Twin:\tnull");
-                GD.Print($"Out:\t{face.Edge.In.Out.Start.Position}");
-                GD.Print($"In:\t\t{face.Edge.In.In.Start.Position}");
-                GD.Print($"Face:\t{face.Edge.In.Face.Edge.Start.Position}");
-                GD.Print($"--=--------{where}--------=--");
             }
         }
 
@@ -623,24 +535,12 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
                 face2.Edge.In.Start.Position
             };
 
-            // foreach (Vector2 point in face1Points)
-            // {
-            //     GD.Print(point);
-            // }
-
-            // foreach(Vector2 point in face2Points)
-            // {
-            //     GD.Print(point);
-            // }
-
             if (face2Points.Contains(face1Points[0]) && face2Points.Contains(face1Points[1]) && face2Points.Contains(face1Points[2]))
             {
-                // GD.Print("isFaceEqule:\ttrue");
                 return true;
             }
             else
             {
-                // GD.Print("isFaceEqule:\tfalse");
                 return false;
             }
         }
@@ -651,11 +551,55 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
             {
                 if (isFaceEqule(f, face))
                 {
-                    // GD.Print("isFaceIn:\ttrue");
                     return true;
                 }
             }
-            // GD.Print("isFaceIn:\tfalse");
+            return false;
+        }
+
+        /// <summary>
+        /// 判断是否需要翻转
+        /// </summary>
+        /// <param name="baseVertex">基点<para><b>通常为插入点</b></para></param>
+        /// <param name="suspect">可疑边</param>
+        /// <returns>Bool</returns>
+        private static bool IsFlipNeeded(Vertex baseVertex, Edge suspect)
+        {
+            if (suspect.Twin != null)
+            {
+                // 获取三角形的三个顶点坐标
+                double x0 = suspect.Start.Position.X;
+                double y0 = suspect.Start.Position.Y;
+                double x1 = baseVertex.Position.X;
+                double y1 = baseVertex.Position.Y;
+                double x2 = suspect.Out.Start.Position.X;
+                double y2 = suspect.Out.Start.Position.Y;
+
+                // 获取需要判断的点坐标
+                double px = suspect.Twin.In.Start.Position.X;
+                double py = suspect.Twin.In.Start.Position.Y;
+
+                // 计算外接圆的圆心和半径
+                double a1 = x1 - x0;
+                double b1 = y1 - y0;
+                double c1 = (a1 * a1 + b1 * b1) / 2.0;
+
+                double a2 = x2 - x0;
+                double b2 = y2 - y0;
+                double c2 = (a2 * a2 + b2 * b2) / 2.0;
+
+                double d = a1 * b2 - a2 * b1;
+                double Cntrx = x0 + (c1 * b2 - c2 * b1) / d;
+                double Cntry = y0 + (a1 * c2 - a2 * c1) / d;
+
+                double Radius_2 = Math.Pow(x0 - Cntrx, 2) + Math.Pow(y0 - Cntry, 2);
+
+                // 计算点 P 到圆心的距离平方
+                double Dist_P_Cntr_2 = Math.Pow(px - Cntrx, 2) + Math.Pow(py - Cntry, 2);
+
+                // 判断点 P 是否在圆内或圆上
+                return Dist_P_Cntr_2 <= Radius_2;
+            }
             return false;
         }
     };

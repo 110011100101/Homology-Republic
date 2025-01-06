@@ -1,9 +1,17 @@
 public class air : GameMaterial
 {
+    string texturePackName;
+    public air(){} 
+
+    public air(string TexturePackName)
+    {
+        texturePackName = TexturePackName;
+    }
+
     // 必须实现的属性
     public override string Name => "air";
-    public override string GroundTexturePath => null;
-    public override string FloorTexturePath => null;
+    public override string GroundTexturePath => TexturePath.GetAirGroundTexturePath(texturePackName);
+    public override string FloorTexturePath => TexturePath.GetAirFloorTexturePath(texturePackName);
     public override MaterialType Type => MaterialType.Gas;
     public override bool isFlammable => false;
     public override bool isFlooraMaterial => false;
@@ -61,9 +69,15 @@ public class air : GameMaterial
 
 public class earth : GameMaterial
 {
+    private string texturePackName;
+    public earth(string TexturePackName)
+    {
+        texturePackName = TexturePackName;
+    }
+
     public override string Name => "erth";
-    public override string GroundTexturePath => TexturePath.earthGroundTexturePath;
-    public override string FloorTexturePath => TexturePath.earthFloorTexturePath;
+    public override string GroundTexturePath => TexturePath.GetEarthGroundTexturePath(texturePackName);
+    public override string FloorTexturePath => TexturePath.GetEarthFloorTexturePath(texturePackName);
     public override MaterialType Type => MaterialType.Solid;
     public override bool isFlammable => false;
     public override bool isFlooraMaterial => true;
@@ -77,10 +91,17 @@ public class earth : GameMaterial
 
 public class water : GameMaterial
 {
+    private string texturePackName;
+    public water(){}
+    public water(string TexturePackName)
+    {
+        texturePackName = TexturePackName;
+    }
+
     // 必须实现的属性
     public override string Name => "water";
-    public override string GroundTexturePath => TexturePath.waterGroundTexturePath;
-    public override string FloorTexturePath => null;
+    public override string GroundTexturePath => TexturePath.GetWaterGroundTexturePath(texturePackName);
+    public override string FloorTexturePath => TexturePath.GetWaterFloorTexturePath(texturePackName);
     public override MaterialType Type => MaterialType.Liquid;
     public override bool isFlammable => false;
     public override bool isFlooraMaterial => false;
@@ -94,10 +115,16 @@ public class water : GameMaterial
 
 public class grass : GameMaterial
 {
+    private string texturePackName;
+    public grass(string TexturePackName)
+    {
+        texturePackName = TexturePackName;
+    }
+
     // 必须实现的属性
     public override string Name => "grass";
-    public override string GroundTexturePath => TexturePath.grassGroundTexturePath;
-    public override string FloorTexturePath => TexturePath.grassFloorTexturePath;
+    public override string GroundTexturePath => TexturePath.GetGrassGroundTexturePath(texturePackName);
+    public override string FloorTexturePath => TexturePath.GetGrassFloorTexturePath(texturePackName);
     public override MaterialType Type => MaterialType.Solid;
     public override bool isFlammable => true;
     public override bool isFlooraMaterial => true;
@@ -111,10 +138,16 @@ public class grass : GameMaterial
 
 public class wood : GameMaterial
 {
+    private string texturePackName;
+    public wood(string TexturePackName)
+    {
+        texturePackName = TexturePackName;
+    }
+
     // 必须实现的属性
     public override string Name => "wood";
-    public override string GroundTexturePath => TexturePath.woodGroundTexturePath;
-    public override string FloorTexturePath => TexturePath.woodFloorTexturePath;
+    public override string GroundTexturePath => TexturePath.GetWoodGroundTexturePath(texturePackName);
+    public override string FloorTexturePath => TexturePath.GetWoodFloorTexturePath(texturePackName);
     public override MaterialType Type => MaterialType.Solid;
     public override bool isFlammable => true;
     public override bool isFlooraMaterial => true;
@@ -128,10 +161,16 @@ public class wood : GameMaterial
 
 public class stone : GameMaterial
 {
+    string texturePackName;
+    public stone(string TexturePackName)
+    {
+        texturePackName = TexturePackName;
+    }
+
     // 必须实现的属性
     public override string Name => "stone";
-    public override string GroundTexturePath => TexturePath.stoneGroundTexturePath;
-    public override string FloorTexturePath => TexturePath.stoneFloorTexturePath;
+    public override string GroundTexturePath => TexturePath.GetStoneGroundTexturePath(texturePackName);
+    public override string FloorTexturePath => TexturePath.GetStoneFloorTexturePath(texturePackName);
     public override MaterialType Type => MaterialType.Solid;
     public override bool isFlammable => false;
     public override bool isFlooraMaterial => true;
@@ -145,10 +184,15 @@ public class stone : GameMaterial
 
 public class sand : GameMaterial
 {
+    private string texturePackName;
+    public sand(string TexturePackName)
+    {
+        texturePackName = TexturePackName;
+    }
     // 必须实现的属性
     public override string Name => "sand";
-    public override string GroundTexturePath => TexturePath.sandGroundTexturePath;
-    public override string FloorTexturePath => null;
+    public override string GroundTexturePath => TexturePath.GetSandGroundTexturePath(texturePackName);
+    public override string FloorTexturePath => TexturePath.GetSandFloorTexturePath(texturePackName);
     public override MaterialType Type => MaterialType.Solid;
     public override bool isFlammable => false;
     public override bool isFlooraMaterial => true;

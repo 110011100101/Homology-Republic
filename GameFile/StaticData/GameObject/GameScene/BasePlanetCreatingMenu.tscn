@@ -33,4 +33,4 @@ text = "按  \" R \" 以复位相机"
 zoom = Vector2(0.1, 0.1)
 script = ExtResource("3_ivfej")
 
-[connection signal="draw" from="MapCreater" to="MapCreater" method="WorkFlow"]
+[connection signal="draw" from="MapCreater" to="MapCreater" method="Main"]

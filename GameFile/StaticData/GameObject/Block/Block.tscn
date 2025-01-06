@@ -1,6 +1,6 @@
 [gd_scene load_steps=3 format=3 uid="uid://cwjkt5hfq5cvy"]
 
-[ext_resource type="Texture2D" uid="uid://oaymlwqirg7b" path="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/defule.png" id="1_spywg"]
+[ext_resource type="Texture2D" uid="uid://oaymlwqirg7b" path="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/default.png" id="1_spywg"]
 [ext_resource type="Script" uid="uid://pukocmhja266" path="res://GameFile/StaticData/GameObject/Block/Block.cs" id="1_up21t"]
 
 [node name="Block" type="Sprite2D"]

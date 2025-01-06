@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://oaymlwqirg7b"
-path="res://.godot/imported/defule.png-e62b86fe485d4ea9a123173e111a28ed.ctex"
+uid="uid://bfu05wf67lsdf"
+path="res://.godot/imported/FeaturePoint.png-caff85540d63e83f8bf29e6f32a0a6e2.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/defule.png"
-dest_files=["res://.godot/imported/defule.png-e62b86fe485d4ea9a123173e111a28ed.ctex"]
+source_file="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/FeaturePoint.png"
+dest_files=["res://.godot/imported/FeaturePoint.png-caff85540d63e83f8bf29e6f32a0a6e2.ctex"]
 
 [params]
 

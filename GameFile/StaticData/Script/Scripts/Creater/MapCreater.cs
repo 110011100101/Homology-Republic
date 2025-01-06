@@ -1,107 +1,94 @@
 using Godot;
 using Godot.Collections;
+using RoseIsland.Library.Algorithm.DelaunayTriangle;
 using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Runtime.CompilerServices;
-using System.Threading;
-using System.Threading.Tasks;
+
+using Color = Godot.Color;
+using Vector2 = Godot.Vector2;
+using SpriteList = System.Collections.Generic.List<Godot.Sprite2D>;
+using VectorList = System.Collections.Generic.List<Godot.Vector2>;
+using Pair = System.Collections.Generic.KeyValuePair<Block, Godot.Sprite2D>;
 
 public partial class MapCreater : Node2D
 {
 	private Data data;
-	private Notice_BasePlanetCreatingMenu notice;
-	private Godot.Collections.Dictionary<Block, Sprite2D> BlockBlones;
-	
+	private Notice_BasePlanetCreatingMenu Notice; // 这个链接到公告面板	
 	// 颜色池
-	private Array<Godot.Color> color_pool = new Array<Godot.Color>() { 
-		new Godot.Color(1.0f, 0.498f, 0.314f, 1.0f),	// 橙红色
-		new Godot.Color(0.392f, 0.584f, 0.929f, 1.0f),	// 天蓝色
-		new Godot.Color(0.769f, 0.306f, 0.804f, 1.0f),	// 紫罗兰色
-		new Godot.Color(0.984f, 0.604f, 0.604f, 1.0f),	// 桃红色
+	private Array<Color> ColorPool = new Array<Color>() { 
+		new Color(1.0f, 0.498f, 0.314f, 1.0f),		// 橙红色
+		new Color(0.392f, 0.584f, 0.929f, 1.0f),	// 天蓝色
+		new Color(0.769f, 0.306f, 0.804f, 1.0f),	// 紫罗兰色
+		new Color(0.984f, 0.604f, 0.604f, 1.0f),	// 桃红色
 	};
 
-	public async override void _Ready()
+	public override void _Ready()
 	{
-		// init
 		data = GetNode<Data>("/root/Data");
-		notice = GetNode<Notice_BasePlanetCreatingMenu>("/root/BasePlanetCreatingMenu/Notice");
+		Notice = GetNode<Notice_BasePlanetCreatingMenu>("/root/BasePlanetCreatingMenu/Notice");
 		GlobalPosition = new Vector2(0, -(CoordinateConverter.ToRealPosition(new Vector2(data.MapSize, data.MapSize)).Y / 2)); // 把 MapSize 转成真实坐标后取一半
-
-		notice.OutputNotice("地图生成器准备完毕");
 	}
 
 	public override void _Process(double delta)
 	{
 	}
 
-	public async void WorkFlow()
+	public void Main()
 	{
-		//
-		// 划分板块
-		// 
+		Random rand = new Random(); 												// 随机数生成器
+		SpriteList FeaturePoints = new SpriteList(); 								// 存放特征点
+		Dictionary<Vector2, Color> ColorDic = new Dictionary<Vector2, Color>(); 	// 记录点和颜色的对应关系
+		VectorList vectors = new VectorList(); 										// 导入德劳内三角的合法点集
+		Dictionary<Block, Sprite2D> BlockBlones = new Dictionary<Block, Sprite2D>(); // 储存每个方块对应的特征点
+		
 		// 生成地基
-		notice.OutputNotice("开始生成地基");
-
 		for (int i = 0; i < data.MapSize; i++)
 		for (int j = 0; j < data.MapSize; j++)
-			_CreateBlock(new Vector2(i, j));
-
-		notice.OutputNotice("地基生成完毕");
-		//
-		// 放置特征点 
-		//
-		Random rand = new Random();
-		HashSet<Vector2> FeatureSet = new HashSet<Vector2>();
-		Array<Sprite2D> FeaturePoints = new Array<Sprite2D>();
-		Godot.Collections.Dictionary<Sprite2D, Godot.Color> color_dic;
-
-
-		notice.OutputNotice("开始放置特征点");
+			CreateBlock(new Vector2(i, j));
 
 		// 选定特征点
-		while (FeatureSet.Count < data.NumberOfPltes)
-			FeatureSet.Add(new Vector2(rand.Next(data.MapSize), rand.Next(data.MapSize)));
+		while (FeaturePoints.Count < data.NumberOfPltes)
+		{
+			Sprite2D FeaturePoint = new Sprite2D()
+			{
+				Position = CoordinateConverter.ToRealPosition(new Vector2(rand.Next(data.MapSize), rand.Next(data.MapSize))),
+				Name = $"FeaturePoint{Position}",
+				Texture = (Texture2D)GD.Load("res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/FeaturePoint.png"), // TODO：这里没做材质包的动态适配,在那个文件夹的路径中插一个访问data里的材质就行
+				Scale = new Vector2(0.1f, 0.1f)
+			};
 
-		notice.OutputNotice("特征点放置完毕");
+			if (FeaturePoints.Contains(FeaturePoint))
+			{
+				FeaturePoints.Add(FeaturePoint);
+			}
+		}
 
-		await Task.Delay(1000);
-		notice.OutputNotice("开始收敛");
-
-		FeaturePoints = _AddFeaturePoints(FeatureSet);
-		_Convergence(FeaturePoints);
-
-		notice.OutputNotice("收敛完毕");
-
+		Convergence(FeaturePoints, BlockBlones);
 
 		// 接下来需要导出特征点归属集合
 		// 然后清理线条和特征点,并且给每个block分配大陆并提供按钮以显示颜色区分的视图
-		// BlockBlones; // 这个是最终的特征点字典
-		notice.OutputNotice("开始上色");
+
+		// TODO: 在这里采用贪心算法给德劳内三角剖分后输出的点分配颜色
 		
-		// FeaturePoints = _SortFeature(FeaturePoints, data.MapSize); // 确保特征点是按距离排序的
-		color_dic = _UpdateColor(color_pool, FeaturePoints); // 更新颜色分配
+		// 根据特征点清单构建点集
 
-		foreach (Node temp in GetChildren())
+		foreach (Sprite2D sprite2D in FeaturePoints)
 		{
-			await Task.Factory.StartNew(() => {
-
-				CallDeferred("_ChangeColor", temp, FeaturePoints, color_dic);
-			});
+			vectors.Add(new Vector2(sprite2D.Position.X, sprite2D.Position.Y));
 		}
-		notice.OutputNotice("上色完成");
 
-		// 把特征点按顺序用箭头连起来
+		// 分配: 
+		AllocationColor(ColorDic, DelaunayTriangle.Main(vectors, data.MapSize));
 		
-		for (int i = 0; i < FeaturePoints.Count - 1; i++)
+		// 异步上色
+		// TODO: 还未实现异步
+		foreach (Node node in this.GetChildren())
 		{
-			AddChild(new Label(){ Text = $"{i}", Scale = new Vector2(15, 15), Position = FeaturePoints[i].Position});
-			Vector2 start = FeaturePoints[i].Position;
-			Vector2 end = FeaturePoints[i + 1].Position;
-			await Task.Factory.StartNew(() => {
-				CallDeferred("_DrawLine", start, end);
-				Task.Delay(100);
-			});
+			if (node is Sprite2D)
+			{
+				// 声明一下是因为这是静态语言,不声明调用不了Block的属性
+				Block block = (Block)node;
+				block.Modulate = ColorDic[BlockBlones[block].Position];
+			}
 		}
 
 		// 
@@ -111,96 +98,31 @@ public partial class MapCreater : Node2D
 		
 	}
 
-	private void _DrawLine(Vector2 start, Vector2 end)
-	{
-		Line2D line = new Line2D()
-		{
-			Points = new Vector2[]{ start, end },
-			DefaultColor = new Godot.Color(0, 0, 0),
-			Width = 5f,
-		};
-		this.AddChild(line);
-	}
-	
-	private void _ChangeColor(Node temp, Array<Sprite2D> FeaturePoints, Godot.Collections.Dictionary<Sprite2D, Godot.Color> color_dic)
-	{
-		if (temp.GetType() == typeof(Line2D))
-		{
-			Line2D templine = (Line2D)temp;
-			Block tempblock = GetNode<Block>($"{CoordinateConverter.ToMatrixPosition(templine.GetPointPosition(0))}");
-
-			tempblock.Modulate = color_dic[BlockBlones[tempblock]]; // 修改颜色
-			temp.QueueFree(); // 清除线条
-		}
-	}
-
-	private Godot.Collections.Dictionary<Sprite2D, Godot.Color> _UpdateColor(Array<Godot.Color> color_pool, Array<Sprite2D> FeaturePoints)
-	{
-		Godot.Collections.Dictionary<Sprite2D, Godot.Color> color_dic = new Godot.Collections.Dictionary<Sprite2D, Godot.Color>();
-
-		int pool_count = 0;
-
-		foreach (Sprite2D feature in FeaturePoints)
-		{
-			color_dic.Add(feature, color_pool[pool_count]);
-
-			if (pool_count < color_pool.Count - 1)
-			{
-				pool_count++;
-			}
-			else
-			{
-				pool_count = 0;
-			}
-		}
-		return color_dic;
-	}
-
-	private void _CreateBlock(Vector2 BlockPosition)
+	private void CreateBlock(Vector2 BlockPosition)
 	{
 		// init
-		Block block = ((PackedScene)GD.Load("res://GameFile/StaticData/GameObject/Prefeb/Block/Block.tscn")).Instantiate<Block>(); // TODO:不能出现文本
+		Block block = ((PackedScene)GD.Load(PrefebPath.BlockPath)).Instantiate<Block>();
 
 		block.Position = CoordinateConverter.ToRealPosition(BlockPosition);
 		block.Name = $"{BlockPosition}";
 		this.AddChild(block);
 	}
 
-	private Array<Sprite2D> _AddFeaturePoints(HashSet<Vector2> FeatureSet)
-	{
-		int n = 0;
-		Array<Sprite2D> FeaturePoints = new Array<Sprite2D>();
-		foreach (Vector2 position in FeatureSet)
-		{
-			Sprite2D FeaturePoint = new Sprite2D()
-			{
-				Position = CoordinateConverter.ToRealPosition(position),
-				Name = $"FeaturePoint{n}",
-				Texture = (Texture2D)GD.Load("res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/FeaturePoints.png"), // TODO：这里没做材质包的动态适配
-			};
-			FeaturePoints.Add(FeaturePoint);
-			AddChild(FeaturePoint);
-
-			n++;
-		}
-		return FeaturePoints;
-	}
-
 	// 收敛
-	private void _Convergence(Array<Sprite2D> FeaturePoints)
+	private void Convergence(SpriteList FeaturePoints, Dictionary<Block, Sprite2D> BlockBlone)
 	{
 		bool isConvergenced = false;
-		Godot.Collections.Dictionary<Block, Sprite2D> BloneDic = new Godot.Collections.Dictionary<Block, Sprite2D>();
+		Dictionary<Block, Sprite2D> BloneDic = new Dictionary<Block, Sprite2D>();
 
 		while (!isConvergenced)
 		{
-			BloneDic = new Godot.Collections.Dictionary<Block, Sprite2D>();
+			BloneDic = new Dictionary<Block, Sprite2D>();
 
 			foreach (Node2D block in GetChildren())
 			{
 				if (block.GetType() == typeof(Block))
 				{
-					_PickFeaturePoint(FeaturePoints, (Block)block, BloneDic);
+					PickFeaturePoint(FeaturePoints, (Block)block, BloneDic);
 				}
 			}
 
@@ -208,7 +130,7 @@ public partial class MapCreater : Node2D
 			// 求出中心位置,然后把特征点放过去
 			foreach (Sprite2D FeaturePoint in FeaturePoints)
 			{
-				if (FeaturePoint.Position != _CenterPosition(BloneDic, FeaturePoint))
+				if (FeaturePoint.Position != GetCenterPosition(BloneDic, FeaturePoint))
 				{
 					isConvergenced = false;
 					break;
@@ -220,11 +142,11 @@ public partial class MapCreater : Node2D
 			{
 				foreach (Sprite2D FeaturePoint in FeaturePoints)
 				{
-					FeaturePoint.Position = _CenterPosition(BloneDic, FeaturePoint);
+					FeaturePoint.Position = GetCenterPosition(BloneDic, FeaturePoint);
 				}
 			}
 		}
-		BlockBlones = BloneDic;
+		BlockBlone = BloneDic;
 	}
 
 	/// <summary>
@@ -233,7 +155,7 @@ public partial class MapCreater : Node2D
 	/// </summary>
 	/// <param name="FeaturePoints">特征点集</param>
 	/// <param name="block">block</param>
-	private void _PickFeaturePoint(Array<Sprite2D> FeaturePoints, Block block, Godot.Collections.Dictionary<Block, Sprite2D> BloneDic)
+	private void PickFeaturePoint(SpriteList FeaturePoints, Block block, Dictionary<Block, Sprite2D> BloneDic)
 	{
 		Sprite2D FeatureBlone = null;
 
@@ -263,7 +185,7 @@ public partial class MapCreater : Node2D
 						block.Position,
 						FeatureBlone.Position
 					},
-					DefaultColor = new Godot.Color(1, 0, 0),
+					DefaultColor = new Color(1, 0, 0),
 					Width = 1f,
 				};
 				this.AddChild(AFuckingLine);
@@ -272,7 +194,7 @@ public partial class MapCreater : Node2D
 		_UpdateDic<Block, Sprite2D>(block, FeatureBlone, BloneDic);
 	}
 
-	private void _UpdateDic<[MustBeVariant] T, [MustBeVariant] U>(T key, U value, Godot.Collections.Dictionary<T, U> dic)
+	private void _UpdateDic<[MustBeVariant] T, [MustBeVariant] U>(T key, U value, Dictionary<T, U> dic)
 	{
 		U temp;
 
@@ -286,13 +208,13 @@ public partial class MapCreater : Node2D
 		}
 	}
 
-	private Vector2 _CenterPosition(Godot.Collections.Dictionary<Block, Sprite2D> dictionary, Sprite2D FeaturePoint)
+	private Vector2 GetCenterPosition(Dictionary<Block, Sprite2D> dictionary, Sprite2D FeaturePoint)
 	{
 		float sumX = 0;
 		float sumY = 0;
 		int count = 0;
 
-		foreach (KeyValuePair<Block, Sprite2D> pair in dictionary)
+		foreach (Pair pair in dictionary)
 		{
 			if (pair.Value == FeaturePoint)
 			{
@@ -308,9 +230,36 @@ public partial class MapCreater : Node2D
 		return new Vector2(averageX, averageY);
 	}
 
-	// private Array<Sprite2D> _SortFeature(Array<Sprite2D> FeaturePoints, int MapSize)
-	// {
-		
-	// }
+	/// <summary>
+	///	此方法会自动通过起始点来遍历整个网,并分配颜色
+	/// </summary>
+	/// <param name="ColorDic">储存颜色与点的对应关系的字典</param>
+	/// <param name="point">起始点</param>
+	private void AllocationColor(Dictionary<Vector2, Color> ColorDic, Point point)
+    {
+        if (ColorDic.ContainsKey(new Vector2(point.Position.X, point.Position.Y)))
+        {
+            return;
+        }
+
+		foreach (Color color in ColorPool)
+		foreach (Point neighbor in point.Neighbors)
+		{
+			if (ColorDic.ContainsKey(new Vector2(neighbor.Position.X, neighbor.Position.Y)))
+			{
+				if (ColorDic[new Vector2(neighbor.Position.X, neighbor.Position.Y)] != color)
+				{
+					ColorDic.Add(new Vector2(point.Position.X, point.Position.Y), color);
+					return;
+				}
+			}
+		}
+
+        foreach (Point neighbor in point.Neighbors)
+        {
+            AllocationColor(ColorDic, neighbor);
+        }
+    }
+	
 }
 

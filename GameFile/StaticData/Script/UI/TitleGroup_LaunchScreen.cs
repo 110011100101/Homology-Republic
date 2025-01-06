@@ -9,7 +9,7 @@ using System.Xml.Serialization;
 
 public partial class TitleGroup_LaunchScreen : Node2D
 {
-	private bool _isLoadingFinished = false;
+	private bool isLoadingFinished = false;
 
 	public async override void _Ready()
 	{
@@ -33,14 +33,14 @@ public partial class TitleGroup_LaunchScreen : Node2D
 
 		while (_ShakeHandCounter < 30)
 		{
-			if (_isLoadingFinished)
+			if (isLoadingFinished)
 			{
-				Thread.Sleep(1000);
+				Thread.Sleep(500);
 				CallDeferred("_ChangeScene");
 				return Task.CompletedTask;
 			}
 			_ShakeHandCounter++;
-			Thread.Sleep(1000);
+			Thread.Sleep(500);
 		}
 		CallDeferred("_DefferredTimeOutError");
 		return Task.CompletedTask;
@@ -55,8 +55,9 @@ public partial class TitleGroup_LaunchScreen : Node2D
 		GetNode<Data>("/root/Data").BasePlanetCreatingMenu = GD.Load<PackedScene>(ScenePath.BasePlanetCreatingMenu);
 		GetNode<Data>("/root/Data").SettingMenu = GD.Load<PackedScene>(ScenePath.SettingMenu);
 		GetNode<Data>("/root/Data").PlayGround = GD.Load<PackedScene>(ScenePath.PlayGround);
-
-		_isLoadingFinished = true;
+		GetNode<Data>("/root/Data").TexturePackName = "GridConceptPack"; // FIXME: 这里没有实现更改材质包的功能
+		
+		isLoadingFinished = true;
 	}
 
 	private void _ChangeScene()

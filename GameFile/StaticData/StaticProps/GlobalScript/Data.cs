@@ -3,6 +3,10 @@ using System;
 
 public partial class Data : Node
 {
+	// 材质包数据
+	[Export]
+	public string TexturePackName;
+
 	// 创建世界数据4
 	[Export]
 	public string PlanetName;

@@ -32,9 +32,9 @@ public partial class DelaunayTriangleTest : Node2D
 
         int triangleSize = 200;
 
-        Point point = DelaunayTriangle.Main(points, triangleSize);
+        // Point point = DelaunayTriangle.Main(points, triangleSize);
 
-        DrawNet(point, new List<Point>());
+        // DrawNet(point, new List<Point>());
     }
 
     public override void _Process(double delta)

@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bfu05wf67lsdf"
-path="res://.godot/imported/FeaturePoints.png-a0493947753a766e398a2f68a93c608a.ctex"
+uid="uid://oaymlwqirg7b"
+path="res://.godot/imported/default.png-fdea01188ba12ad30a3233b673d196dd.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/FeaturePoints.png"
-dest_files=["res://.godot/imported/FeaturePoints.png-a0493947753a766e398a2f68a93c608a.ctex"]
+source_file="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/default.png"
+dest_files=["res://.godot/imported/default.png-fdea01188ba12ad30a3233b673d196dd.ctex"]
 
 [params]
 

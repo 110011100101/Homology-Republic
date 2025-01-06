@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+
 public class cloud : air
 {
     public int deltaGrayLevel; // 灰度等级
