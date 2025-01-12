@@ -6,8 +6,7 @@ using System.Reflection;
 using System.Reflection.Metadata.Ecma335;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Serialization;
-
+using RoseIsland.Library.CalculationTool.CoordinateConverter;
 public partial class 工人行为脚本 : Node2D
 {
 	public AnimatedSprite2D WorkerSprite; // 工人动画

@@ -5,6 +5,7 @@ using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using RoseIsland.Library.CalculationTool.CoordinateConverter;
 
 public static partial class Astar
 {

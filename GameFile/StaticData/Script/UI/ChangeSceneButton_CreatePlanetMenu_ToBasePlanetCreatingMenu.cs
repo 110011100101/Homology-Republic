@@ -25,6 +25,6 @@ public partial class ChangeSceneButton_CreatePlanetMenu_ToBasePlanetCreatingMenu
 	 	data.PlanetName = GetNode<LineEdit>("../MapInformationGroup/PlanetName/GetPlanetName").Text;
 	 	data.MapSize = ((int)GetNode<SpinBox>("../MapInformationGroup/PlanetParameter/MapSize/GetMapSize").Value);
 	 	data.OceanToLandRatio = ((float)GetNode<SpinBox>("../MapInformationGroup/PlanetParameter/OceanToLandRatio/GetOceanToLandRatio").Value);
-	 	data.NumberOfPltes = ((int)GetNode<SpinBox>("../MapInformationGroup/PlanetParameter/NumberOfPltes/GetNumberOfPltes").Value);
+	 	data.NumberOfPlates = ((int)GetNode<SpinBox>("../MapInformationGroup/PlanetParameter/NumberOfPltes/GetNumberOfPltes").Value);
 	}
 }

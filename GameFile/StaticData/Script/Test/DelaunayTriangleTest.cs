@@ -4,7 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Numerics;
 using System.Threading.Tasks;
-using Vector2 = System.Numerics.Vector2;
+
+using Vector2 = Godot.Vector2;
 
 public partial class DelaunayTriangleTest : Node2D
 {
@@ -32,9 +33,9 @@ public partial class DelaunayTriangleTest : Node2D
 
         int triangleSize = 200;
 
-        // Point point = DelaunayTriangle.Main(points, triangleSize);
+        Point point = DelaunayTriangle.Main(points, triangleSize);
 
-        // DrawNet(point, new List<Point>());
+        DrawNet(point, new List<Point>());
     }
 
     public override void _Process(double delta)
@@ -55,7 +56,7 @@ public partial class DelaunayTriangleTest : Node2D
         {
             Name = $"{point.Position}",
             Position = new Godot.Vector2(point.Position.X, point.Position.Y),
-            Texture = (Texture2D)GD.Load("res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/FeaturePoints.png"),
+            Texture = (Texture2D)GD.Load(TexturePath.GetFeaturePointTexturePath("GridConceptPack")),
             Scale = new Godot.Vector2(0.3f, 0.3f)
         };
 

@@ -145,10 +145,6 @@ namespace RoseIsland.Library.Algorithm.DelaunayTriangle
                     {
                         Edge suspect = suspects[0]; // 取出一个可疑边
 
-                        GD.Print("检查可疑边\t", suspect.Start.Position, " to ", suspect.Out.Start.Position);
-
-                        GD.Print("IsFlipNeeded\t", IsFlipNeeded(vertex, suspect));
-
                         if (IsFlipNeeded(vertex, suspect))
                         {
                             FlipEdge(faces, suspect, suspects);

@@ -1,13 +1,18 @@
 using Godot;
 using Godot.Collections;
 using RoseIsland.Library.Algorithm.DelaunayTriangle;
+using RoseIsland.Library.CalculationTool.CoordinateConverter;
 using System;
+using System.Threading.Tasks;
+using System.Linq;
 
 using Color = Godot.Color;
 using Vector2 = Godot.Vector2;
 using SpriteList = System.Collections.Generic.List<Godot.Sprite2D>;
 using VectorList = System.Collections.Generic.List<Godot.Vector2>;
 using Pair = System.Collections.Generic.KeyValuePair<Block, Godot.Sprite2D>;
+using List = System.Collections.Generic.List<Point>;
+
 
 public partial class MapCreater : Node2D
 {
@@ -32,70 +37,102 @@ public partial class MapCreater : Node2D
 	{
 	}
 
-	public void Main()
+	public async void Main()
 	{
-		Random rand = new Random(); 												// 随机数生成器
-		SpriteList FeaturePoints = new SpriteList(); 								// 存放特征点
-		Dictionary<Vector2, Color> ColorDic = new Dictionary<Vector2, Color>(); 	// 记录点和颜色的对应关系
-		VectorList vectors = new VectorList(); 										// 导入德劳内三角的合法点集
-		Dictionary<Block, Sprite2D> BlockBlones = new Dictionary<Block, Sprite2D>(); // 储存每个方块对应的特征点
-		
+		GD.Print("检查点1: 开始 Main 方法");
+		await Task.Delay(1000);
+
+		Random rand = new Random(); 													// 随机数生成器
+		SpriteList FeaturePoints = new SpriteList(); 									// 存放特征点
+		Dictionary<Vector2, Color> ColorDic = new Dictionary<Vector2, Color>(); 		// 记录点和颜色的对应关系
+		VectorList vectors = new VectorList(); 											// 导入德劳内三角的合法点集
+		Dictionary<Block, Sprite2D> BlockBlones = new Dictionary<Block, Sprite2D>(); 	// 储存每个方块对应的特征点
+
+		GD.Print("检查点2: 生成地基");
+		await Task.Delay(1000);
+
 		// 生成地基
 		for (int i = 0; i < data.MapSize; i++)
-		for (int j = 0; j < data.MapSize; j++)
-			CreateBlock(new Vector2(i, j));
+		{
+			await Task.Run (() => {	
+				for (int j = 0; j < data.MapSize; j++)
+					CallDeferred(nameof(CreateBlock), new Vector2(i, j));
+			});
+		}
+
+		GD.Print("检查点3: 选定特征点");
+		await Task.Delay(1000);
 
 		// 选定特征点
-		while (FeaturePoints.Count < data.NumberOfPltes)
+		while (FeaturePoints.Count < data.NumberOfPlates)
 		{
 			Sprite2D FeaturePoint = new Sprite2D()
 			{
 				Position = CoordinateConverter.ToRealPosition(new Vector2(rand.Next(data.MapSize), rand.Next(data.MapSize))),
 				Name = $"FeaturePoint{Position}",
-				Texture = (Texture2D)GD.Load("res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/FeaturePoint.png"), // TODO：这里没做材质包的动态适配,在那个文件夹的路径中插一个访问data里的材质就行
+				Texture = (Texture2D)GD.Load(TexturePath.GetFeaturePointTexturePath(data.TexturePackName)),
 				Scale = new Vector2(0.1f, 0.1f)
 			};
 
-			if (FeaturePoints.Contains(FeaturePoint))
+			if (!FeaturePoints.Contains(FeaturePoint))
 			{
 				FeaturePoints.Add(FeaturePoint);
 			}
 		}
 
-		Convergence(FeaturePoints, BlockBlones);
+		GD.Print("检查点4: 收敛特征点");
+		await Task.Delay(1000);
 
-		// 接下来需要导出特征点归属集合
-		// 然后清理线条和特征点,并且给每个block分配大陆并提供按钮以显示颜色区分的视图
+		// 收敛
+		BlockBlones = Convergence(FeaturePoints);
 
-		// TODO: 在这里采用贪心算法给德劳内三角剖分后输出的点分配颜色
-		
+		GD.Print("检查点5: 打印 BlockBlones");
+		await Task.Delay(1000);
+
+		// 打印 BlockBlones 的一个元素
+		GD.Print($"BlockBlones Entry: Key = {BlockBlones.First().Key.Position}, Value = {BlockBlones.First().Value.Position}");
+
+		GD.Print("检查点6: 根据特征点清单构建点集");
+		await Task.Delay(1000);
+
 		// 根据特征点清单构建点集
-
 		foreach (Sprite2D sprite2D in FeaturePoints)
 		{
 			vectors.Add(new Vector2(sprite2D.Position.X, sprite2D.Position.Y));
 		}
 
+		GD.Print("检查点7: 分配颜色");
+		await Task.Delay(1000);
+
 		// 分配: 
-		AllocationColor(ColorDic, DelaunayTriangle.Main(vectors, data.MapSize));
-		
-		// 异步上色
-		// TODO: 还未实现异步
-		foreach (Node node in this.GetChildren())
+		Point startPoint = DelaunayTriangle.Main(vectors, (int)CoordinateConverter.ToRealPosition(new Vector2(data.MapSize, data.MapSize)).X);
+		AllocateColor(ColorDic, startPoint);
+
+		// 打印 ColorDic 的所有元素
+		foreach (var entry in ColorDic)
 		{
-			if (node is Sprite2D)
-			{
-				// 声明一下是因为这是静态语言,不声明调用不了Block的属性
-				Block block = (Block)node;
-				block.Modulate = ColorDic[BlockBlones[block].Position];
-			}
+		    GD.Print($"ColorDic Entry: Key = {entry.Key}, Value = {entry.Value}");
 		}
+
+		GD.Print("检查点8: 异步上色");
+		await Task.Delay(1000);
+
+		// 异步上色
+		await Task.Run (() => {
+			CallDeferred(nameof(UpdateColor), ColorDic, BlockBlones);
+		});
+
+		GD.Print("检查点9: 地形配置");
+		await Task.Delay(1000);
 
 		// 
 		// 选配地形
 		// 
 		// 海陆划分
-		
+		GD.Print("检查点10: 开始地形配置");
+		await Task.Delay(1000);
+
+		// 检查并修正重复颜色
 	}
 
 	private void CreateBlock(Vector2 BlockPosition)
@@ -109,20 +146,20 @@ public partial class MapCreater : Node2D
 	}
 
 	// 收敛
-	private void Convergence(SpriteList FeaturePoints, Dictionary<Block, Sprite2D> BlockBlone)
+	private Dictionary<Block, Sprite2D> Convergence(SpriteList FeaturePoints)
 	{
 		bool isConvergenced = false;
-		Dictionary<Block, Sprite2D> BloneDic = new Dictionary<Block, Sprite2D>();
+		Dictionary<Block, Sprite2D> BlockBlones = new Dictionary<Block, Sprite2D>(); // 修改注释: BloneDic -> BlockBlones
 
 		while (!isConvergenced)
 		{
-			BloneDic = new Dictionary<Block, Sprite2D>();
+			BlockBlones = new Dictionary<Block, Sprite2D>();
 
 			foreach (Node2D block in GetChildren())
 			{
 				if (block.GetType() == typeof(Block))
 				{
-					PickFeaturePoint(FeaturePoints, (Block)block, BloneDic);
+					PickFeaturePoint(FeaturePoints, (Block)block, BlockBlones);
 				}
 			}
 
@@ -130,7 +167,7 @@ public partial class MapCreater : Node2D
 			// 求出中心位置,然后把特征点放过去
 			foreach (Sprite2D FeaturePoint in FeaturePoints)
 			{
-				if (FeaturePoint.Position != GetCenterPosition(BloneDic, FeaturePoint))
+				if (FeaturePoint.Position != GetCenterPosition(BlockBlones, FeaturePoint))
 				{
 					isConvergenced = false;
 					break;
@@ -142,11 +179,11 @@ public partial class MapCreater : Node2D
 			{
 				foreach (Sprite2D FeaturePoint in FeaturePoints)
 				{
-					FeaturePoint.Position = GetCenterPosition(BloneDic, FeaturePoint);
+					FeaturePoint.Position = GetCenterPosition(BlockBlones, FeaturePoint);
 				}
 			}
 		}
-		BlockBlone = BloneDic;
+		return BlockBlones;
 	}
 
 	/// <summary>
@@ -191,10 +228,10 @@ public partial class MapCreater : Node2D
 				this.AddChild(AFuckingLine);
 			}
 		}
-		_UpdateDic<Block, Sprite2D>(block, FeatureBlone, BloneDic);
+		UpdateDic<Block, Sprite2D>(block, FeatureBlone, BloneDic);
 	}
 
-	private void _UpdateDic<[MustBeVariant] T, [MustBeVariant] U>(T key, U value, Dictionary<T, U> dic)
+	private void UpdateDic<[MustBeVariant] T, [MustBeVariant] U>(T key, U value, Dictionary<T, U> dic)
 	{
 		U temp;
 
@@ -206,6 +243,32 @@ public partial class MapCreater : Node2D
 		{
 			dic.Add(key, value);
 		}
+	}
+
+	public void UpdateColor(Dictionary<Vector2, Color> ColorDic, Dictionary<Block, Sprite2D> BlockBlones)
+	{
+		foreach (Node node in this.GetChildren())
+		{	
+			if (node is Block)
+			{
+				Block block = (Block)node;
+				if (BlockBlones.TryGetValue(block, out Sprite2D featurePoint) && ColorDic.TryGetValue(featurePoint.Position, out Color color))
+				{
+					block.Modulate = color;
+				}
+				else
+				{
+					GD.Print(featurePoint.Position,"颜色不存在");
+				}
+			}	
+
+			if (node is Line2D)
+			{
+				this.RemoveChild(node);
+			}
+		}
+
+		
 	}
 
 	private Vector2 GetCenterPosition(Dictionary<Block, Sprite2D> dictionary, Sprite2D FeaturePoint)
@@ -231,35 +294,47 @@ public partial class MapCreater : Node2D
 	}
 
 	/// <summary>
-	///	此方法会自动通过起始点来遍历整个网,并分配颜色
+	/// 此方法会自动通过起始点来遍历整个网,并分配颜色，确保没有重复颜色
 	/// </summary>
 	/// <param name="ColorDic">储存颜色与点的对应关系的字典</param>
-	/// <param name="point">起始点</param>
-	private void AllocationColor(Dictionary<Vector2, Color> ColorDic, Point point)
-    {
-        if (ColorDic.ContainsKey(new Vector2(point.Position.X, point.Position.Y)))
-        {
-            return;
-        }
+	/// <param name="point">需要分配的点</param>
+	private void AllocateColor(Dictionary<Vector2, Color> ColorDic, Point point)
+	{
+		Point NextPoint = null;
 
+		// 调用时分配给自己一个颜色
 		foreach (Color color in ColorPool)
-		foreach (Point neighbor in point.Neighbors)
 		{
-			if (ColorDic.ContainsKey(new Vector2(neighbor.Position.X, neighbor.Position.Y)))
+			bool isRepeat = false;
+			foreach (Point neighbor in point.Neighbors)
 			{
-				if (ColorDic[new Vector2(neighbor.Position.X, neighbor.Position.Y)] != color)
+				if (ColorDic.ContainsKey(neighbor.Position) && ColorDic[neighbor.Position].Equals(color))
 				{
-					ColorDic.Add(new Vector2(point.Position.X, point.Position.Y), color);
-					return;
+					isRepeat = true;
+					break;
 				}
+			}
+			
+			if (!isRepeat)
+			{
+				ColorDic.Add(point.Position, color);
+				break;
 			}
 		}
 
-        foreach (Point neighbor in point.Neighbors)
-        {
-            AllocationColor(ColorDic, neighbor);
-        }
+		// 决定递归对象
+		foreach (Point p in point.Neighbors)
+		{
+			if (!ColorDic.ContainsKey(p.Position))
+			{
+				NextPoint = p;
+			}
+		}
+
+		if (NextPoint != null)
+		{
+			AllocateColor(ColorDic, NextPoint);
+		}
     }
-	
 }
 

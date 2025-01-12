@@ -6,6 +6,7 @@ using System.Data;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using RoseIsland.Library.CalculationTool.CoordinateConverter;
 
 public partial class 视差测试专用地图生成脚本 : Node2D
 {

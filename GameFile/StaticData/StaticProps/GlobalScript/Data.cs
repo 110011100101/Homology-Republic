@@ -15,7 +15,7 @@ public partial class Data : Node
 	[Export]
 	public float OceanToLandRatio;
 	[Export]
-	public int NumberOfPltes;
+	public int NumberOfPlates;
 
 	// 预加载场景 
 	[Export]

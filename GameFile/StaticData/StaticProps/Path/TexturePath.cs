@@ -4,6 +4,9 @@ public static class TexturePath
     // 默认
     public static string GetDefaultTexturePath(string packName) => $"res://GameFile/StaticData/GameAssets/Texture/{packName}/tiles/default.png";
 
+    // 特征点
+    public static string GetFeaturePointTexturePath(string packName) => $"res://GameFile/StaticData/GameAssets/Texture/{packName}/tiles/FeaturePoint.png";
+
     // 空气
     public static string GetAirGroundTexturePath(string packName) => null;
     public static string GetAirFloorTexturePath(string packName) => null;
