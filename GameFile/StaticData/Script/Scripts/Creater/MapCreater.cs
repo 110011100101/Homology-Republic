@@ -18,6 +18,8 @@ public partial class MapCreater : Node2D
 {
 	private Data data;
 	private Notice_BasePlanetCreatingMenu Notice; // 这个链接到公告面板	
+	public Dictionary<Vector2, Color> ColorDic = new Dictionary<Vector2, Color>(); 		// 记录点和颜色的对应关系
+
 	// 颜色池
 	private Array<Color> ColorPool = new Array<Color>() { 
 		new Color(1.0f, 0.498f, 0.314f, 1.0f),		// 橙红色
@@ -44,7 +46,6 @@ public partial class MapCreater : Node2D
 
 		Random rand = new Random(); 													// 随机数生成器
 		SpriteList FeaturePoints = new SpriteList(); 									// 存放特征点
-		Dictionary<Vector2, Color> ColorDic = new Dictionary<Vector2, Color>(); 		// 记录点和颜色的对应关系
 		VectorList vectors = new VectorList(); 											// 导入德劳内三角的合法点集
 		Dictionary<Block, Sprite2D> BlockBlones = new Dictionary<Block, Sprite2D>(); 	// 储存每个方块对应的特征点
 
@@ -106,7 +107,7 @@ public partial class MapCreater : Node2D
 
 		// 分配: 
 		Point startPoint = DelaunayTriangle.Main(vectors, (int)CoordinateConverter.ToRealPosition(new Vector2(data.MapSize, data.MapSize)).X);
-		AllocateColor(ColorDic, startPoint);
+		AllocateColor(startPoint);
 
 		// 打印 ColorDic 的所有元素
 		foreach (var entry in ColorDic)
@@ -298,7 +299,7 @@ public partial class MapCreater : Node2D
 	/// </summary>
 	/// <param name="ColorDic">储存颜色与点的对应关系的字典</param>
 	/// <param name="point">需要分配的点</param>
-	private void AllocateColor(Dictionary<Vector2, Color> ColorDic, Point point)
+	private void AllocateColor(Point point)
 	{
 		Point NextPoint = null;
 
@@ -310,6 +311,7 @@ public partial class MapCreater : Node2D
 			{
 				if (ColorDic.ContainsKey(neighbor.Position) && ColorDic[neighbor.Position].Equals(color))
 				{
+					GD.Print("重复啦!");
 					isRepeat = true;
 					break;
 				}
@@ -333,7 +335,7 @@ public partial class MapCreater : Node2D
 
 		if (NextPoint != null)
 		{
-			AllocateColor(ColorDic, NextPoint);
+			AllocateColor(NextPoint);
 		}
     }
 }
