@@ -35,14 +35,16 @@ public partial class DelaunayTriangleTest : Node2D
 
         Point point = DelaunayTriangle.Main(points, triangleSize);
 
-        DrawNet(point, new List<Point>());
+        DrawPoint(point, new List<Point>());
+        DrawNet(point);
+        
     }
 
     public override void _Process(double delta)
     {
     }
 
-    public void DrawNet(Point point, List<Point> visitedPoints)
+    public void DrawPoint(Point point, List<Point> visitedPoints)
     {
         if (visitedPoints.Contains(point))
         {
@@ -57,14 +59,34 @@ public partial class DelaunayTriangleTest : Node2D
             Name = $"{point.Position}",
             Position = new Godot.Vector2(point.Position.X, point.Position.Y),
             Texture = (Texture2D)GD.Load(TexturePath.GetFeaturePointTexturePath("GridConceptPack")),
-            Scale = new Godot.Vector2(0.3f, 0.3f)
+            Scale = new Godot.Vector2(0.1f, 0.1f)
         };
 
         AddChild(sprite2D);
 
         foreach (Point neighbor in point.Neighbors)
         {
-            DrawNet(neighbor, visitedPoints);
+            DrawPoint(neighbor, visitedPoints);
         }
+    }
+
+	public List<Point> FinishPoints= new List<Point>();
+    public void DrawNet(Point startPoint)
+    {
+        // 检查邻居的逻辑是否正确
+		FinishPoints.Add(startPoint);
+
+		foreach (Point neighbor in startPoint.Neighbors)
+		{
+			this.AddChild(new Line2D(){ Points = [startPoint.Position, neighbor.Position], Width = 0.3f });
+		}
+		
+		foreach (Point neighbor in startPoint.Neighbors)
+		{
+			if (!FinishPoints.Contains(neighbor))
+			{
+				DrawNet(neighbor);
+			}
+		}
     }
 }

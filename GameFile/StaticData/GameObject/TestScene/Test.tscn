@@ -1,9 +1,11 @@
-[gd_scene load_steps=2 format=3 uid="uid://km4xq2grj2ae"]
+[gd_scene load_steps=3 format=3 uid="uid://km4xq2grj2ae"]
 
 [ext_resource type="Script" uid="uid://dtgg7kqtnwfv6" path="res://GameFile/StaticData/Script/Test/DelaunayTriangleTest.cs" id="1_jj83d"]
+[ext_resource type="Script" uid="uid://bnnmelkjlq4s7" path="res://GameFile/StaticData/Script/UI/Camera_BasePlanetCreatingMenu.cs" id="2_sbgva"]
 
 [node name="Test" type="Node2D"]
 script = ExtResource("1_jj83d")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(6, -12)
+script = ExtResource("2_sbgva")

@@ -10,18 +10,17 @@ using Color = Godot.Color;
 using Vector2 = Godot.Vector2;
 using SpriteList = System.Collections.Generic.List<Godot.Sprite2D>;
 using VectorList = System.Collections.Generic.List<Godot.Vector2>;
+using PointList = System.Collections.Generic.List<Point>;
+using ColorList = System.Collections.Generic.HashSet<Godot.Color>;
 using Pair = System.Collections.Generic.KeyValuePair<Block, Godot.Sprite2D>;
-using List = System.Collections.Generic.List<Point>;
-
 
 public partial class MapCreater : Node2D
 {
 	private Data data;
-	private Notice_BasePlanetCreatingMenu Notice; // 这个链接到公告面板	
-	public Dictionary<Vector2, Color> ColorDic = new Dictionary<Vector2, Color>(); 		// 记录点和颜色的对应关系
+	public Dictionary<Vector2, Color> ColorDic = new Dictionary<Vector2, Color>();      // 记录点和颜色的对应关系
 
 	// 颜色池
-	private Array<Color> ColorPool = new Array<Color>() { 
+	private ColorList ColorPool = new ColorList() {
 		new Color(1.0f, 0.498f, 0.314f, 1.0f),		// 橙红色
 		new Color(0.392f, 0.584f, 0.929f, 1.0f),	// 天蓝色
 		new Color(0.769f, 0.306f, 0.804f, 1.0f),	// 紫罗兰色
@@ -31,7 +30,6 @@ public partial class MapCreater : Node2D
 	public override void _Ready()
 	{
 		data = GetNode<Data>("/root/Data");
-		Notice = GetNode<Notice_BasePlanetCreatingMenu>("/root/BasePlanetCreatingMenu/Notice");
 		GlobalPosition = new Vector2(0, -(CoordinateConverter.ToRealPosition(new Vector2(data.MapSize, data.MapSize)).Y / 2)); // 把 MapSize 转成真实坐标后取一半
 	}
 
@@ -41,33 +39,24 @@ public partial class MapCreater : Node2D
 
 	public async void Main()
 	{
-		GD.Print("检查点1: 开始 Main 方法");
-		await Task.Delay(1000);
-
-		Random rand = new Random(); 													// 随机数生成器
-		SpriteList FeaturePoints = new SpriteList(); 									// 存放特征点
-		VectorList vectors = new VectorList(); 											// 导入德劳内三角的合法点集
-		Dictionary<Block, Sprite2D> BlockBlones = new Dictionary<Block, Sprite2D>(); 	// 储存每个方块对应的特征点
-
-		GD.Print("检查点2: 生成地基");
-		await Task.Delay(1000);
+		Random rand = new Random();                                                     // 随机数生成器
+		SpriteList featurePoints = new SpriteList();                                    // 存放特征点
+		VectorList vectors = new VectorList();                                          // 导入德劳内三角的合法点集
+		Dictionary<Block, Sprite2D> blockBlones = new Dictionary<Block, Sprite2D>();    // 储存每个方块对应的特征点
+		Dictionary<Sprite2D, int> blockNumber = new Dictionary<Sprite2D, int>();        // 储存每个区块的方格数量
 
 		// 生成地基
 		for (int i = 0; i < data.MapSize; i++)
-		{
-			await Task.Run (() => {	
+			await Task.Run(() =>
+			{
 				for (int j = 0; j < data.MapSize; j++)
 					CallDeferred(nameof(CreateBlock), new Vector2(i, j));
 			});
-		}
-
-		GD.Print("检查点3: 选定特征点");
-		await Task.Delay(1000);
 
 		// 选定特征点
-		while (FeaturePoints.Count < data.NumberOfPlates)
+		while (featurePoints.Count < data.NumberOfPlates)
 		{
-			Sprite2D FeaturePoint = new Sprite2D()
+			Sprite2D featurePoint = new Sprite2D()
 			{
 				Position = CoordinateConverter.ToRealPosition(new Vector2(rand.Next(data.MapSize), rand.Next(data.MapSize))),
 				Name = $"FeaturePoint{Position}",
@@ -75,204 +64,161 @@ public partial class MapCreater : Node2D
 				Scale = new Vector2(0.1f, 0.1f)
 			};
 
-			if (!FeaturePoints.Contains(FeaturePoint))
+			if (!featurePoints.Contains(featurePoint))
 			{
-				FeaturePoints.Add(FeaturePoint);
+				featurePoints.Add(featurePoint);
 			}
 		}
 
-		GD.Print("检查点4: 收敛特征点");
-		await Task.Delay(1000);
-
 		// 收敛
-		BlockBlones = Convergence(FeaturePoints);
-
-		GD.Print("检查点5: 打印 BlockBlones");
-		await Task.Delay(1000);
-
-		// 打印 BlockBlones 的一个元素
-		GD.Print($"BlockBlones Entry: Key = {BlockBlones.First().Key.Position}, Value = {BlockBlones.First().Value.Position}");
-
-		GD.Print("检查点6: 根据特征点清单构建点集");
-		await Task.Delay(1000);
+		blockBlones = Convergence(featurePoints);
 
 		// 根据特征点清单构建点集
-		foreach (Sprite2D sprite2D in FeaturePoints)
+		foreach (Sprite2D sprite2D in featurePoints)
 		{
 			vectors.Add(new Vector2(sprite2D.Position.X, sprite2D.Position.Y));
 		}
 
-		GD.Print("检查点7: 分配颜色");
-		await Task.Delay(1000);
-
-		// 分配: 
+		// 德劳内三角剖分输出点集
 		Point startPoint = DelaunayTriangle.Main(vectors, (int)CoordinateConverter.ToRealPosition(new Vector2(data.MapSize, data.MapSize)).X);
+
 		AllocateColor(startPoint);
 
-		// 打印 ColorDic 的所有元素
-		foreach (var entry in ColorDic)
-		{
-		    GD.Print($"ColorDic Entry: Key = {entry.Key}, Value = {entry.Value}");
-		}
-
-		GD.Print("检查点8: 异步上色");
-		await Task.Delay(1000);
-
 		// 异步上色
-		await Task.Run (() => {
-			CallDeferred(nameof(UpdateColor), ColorDic, BlockBlones);
+		await Task.Run(() =>
+		{
+			CallDeferred(nameof(UpdateColor), ColorDic, blockBlones);
 		});
 
-		GD.Print("检查点9: 地形配置");
-		await Task.Delay(1000);
-
-		// 
-		// 选配地形
-		// 
-		// 海陆划分
-		GD.Print("检查点10: 开始地形配置");
-		await Task.Delay(1000);
-
-		// 检查并修正重复颜色
-	}
-
-	private void CreateBlock(Vector2 BlockPosition)
-	{
-		// init
-		Block block = ((PackedScene)GD.Load(PrefebPath.BlockPath)).Instantiate<Block>();
-
-		block.Position = CoordinateConverter.ToRealPosition(BlockPosition);
-		block.Name = $"{BlockPosition}";
-		this.AddChild(block);
-	}
-
-	// 收敛
-	private Dictionary<Block, Sprite2D> Convergence(SpriteList FeaturePoints)
-	{
-		bool isConvergenced = false;
-		Dictionary<Block, Sprite2D> BlockBlones = new Dictionary<Block, Sprite2D>(); // 修改注释: BloneDic -> BlockBlones
-
-		while (!isConvergenced)
-		{
-			BlockBlones = new Dictionary<Block, Sprite2D>();
-
-			foreach (Node2D block in GetChildren())
-			{
-				if (block.GetType() == typeof(Block))
-				{
-					PickFeaturePoint(FeaturePoints, (Block)block, BlockBlones);
-				}
-			}
-
-			// 调整特征点然后决定是否继续遍历
-			// 求出中心位置,然后把特征点放过去
-			foreach (Sprite2D FeaturePoint in FeaturePoints)
-			{
-				if (FeaturePoint.Position != GetCenterPosition(BlockBlones, FeaturePoint))
-				{
-					isConvergenced = false;
-					break;
-				}
-				isConvergenced = true;
-			}
-
-			if (!isConvergenced)
-			{
-				foreach (Sprite2D FeaturePoint in FeaturePoints)
-				{
-					FeaturePoint.Position = GetCenterPosition(BlockBlones, FeaturePoint);
-				}
-			}
-		}
-		return BlockBlones;
+		// 统计
+		blockNumber = CountBlockNumbers(blockBlones);
 	}
 
 	/// <summary>
-	///	选择特征点
-	///	<span>这个方法会将传入的 <paramref name="block"/> 与传入的 <paramref name="FeaturePoints"/> 集合进行轮询</span>
+	/// 创建一个方块并添加到地图中。
 	/// </summary>
-	/// <param name="FeaturePoints">特征点集</param>
-	/// <param name="block">block</param>
-	private void PickFeaturePoint(SpriteList FeaturePoints, Block block, Dictionary<Block, Sprite2D> BloneDic)
+	/// <param name="blockPosition">方块的位置。</param>
+	private void CreateBlock(Vector2 blockPosition)
 	{
-		Sprite2D FeatureBlone = null;
+		Block block = ((PackedScene)GD.Load(PrefebPath.BlockPath)).Instantiate<Block>();
 
-		foreach (Sprite2D FeaturePoint in FeaturePoints)
-		{
-			if (FeatureBlone == null)
-			{
-				FeatureBlone = FeaturePoint;
-			}
-			else if (block.Position.DistanceTo(FeatureBlone.Position) > block.Position.DistanceTo(FeaturePoint.Position))
-			{
-				// 比较距离
-				FeatureBlone = FeaturePoint;
-			}
-
-			if (this.HasNode($"Line{block.Name}"))
-			{
-				GetNode<Line2D>($"Line{block.Name}").RemovePoint(1);
-				GetNode<Line2D>($"Line{block.Name}").AddPoint(FeatureBlone.Position);
-			}
-			else
-			{
-				Line2D AFuckingLine = new Line2D()
-				{
-					Name = $"Line{block.Name}",
-					Points = new Vector2[]{
-						block.Position,
-						FeatureBlone.Position
-					},
-					DefaultColor = new Color(1, 0, 0),
-					Width = 1f,
-				};
-				this.AddChild(AFuckingLine);
-			}
-		}
-		UpdateDic<Block, Sprite2D>(block, FeatureBlone, BloneDic);
+		block.Position = CoordinateConverter.ToRealPosition(blockPosition);
+		block.Name = $"{blockPosition}";
+		this.AddChild(block);
 	}
 
-	private void UpdateDic<[MustBeVariant] T, [MustBeVariant] U>(T key, U value, Dictionary<T, U> dic)
+	/// <summary>
+	/// 通过特征点收敛方块。
+	/// </summary>
+	/// <param name="featurePoints">特征点列表。</param>
+	/// <returns>每个方块对应的特征点字典。</returns>
+	private Dictionary<Block, Sprite2D> Convergence(SpriteList featurePoints)
 	{
-		U temp;
+		bool isConvergenced = false;
+		Dictionary<Block, Sprite2D> blockBlones = new Dictionary<Block, Sprite2D>();
 
-		if (dic.TryGetValue(key, out temp))
+		while (!isConvergenced)
 		{
-			dic[key] = value;
+			blockBlones = new Dictionary<Block, Sprite2D>();
+
+			foreach (Node2D block in GetChildren())
+			{
+				if (block is Block)
+				{
+					PickFeaturePoint(featurePoints, (Block)block, blockBlones);
+				}
+			}
+
+			isConvergenced = featurePoints.All(featurePoint => featurePoint.Position == GetCenterPosition(blockBlones, featurePoint));
+
+			if (!isConvergenced)
+			{
+				foreach (Sprite2D featurePoint in featurePoints)
+				{
+					featurePoint.Position = GetCenterPosition(blockBlones, featurePoint);
+				}
+			}
+		}
+		return blockBlones;
+	}
+
+	/// <summary>
+	/// 为每个方块选择最近的特征点。
+	/// </summary>
+	/// <param name="featurePoints">特征点列表。</param>
+	/// <param name="block">方块。</param>
+	/// <param name="bloneDic">方块对应的特征点字典。</param>
+	private void PickFeaturePoint(SpriteList featurePoints, Block block, Dictionary<Block, Sprite2D> bloneDic)
+	{
+		var featureBlone = featurePoints.OrderBy(featurePoint => block.Position.DistanceTo(featurePoint.Position)).First();
+
+		if (this.HasNode($"Line{block.Name}"))
+		{
+			GetNode<Line2D>($"Line{block.Name}").RemovePoint(1);
+			GetNode<Line2D>($"Line{block.Name}").AddPoint(featureBlone.Position);
 		}
 		else
 		{
-			dic.Add(key, value);
+			Line2D line = new Line2D()
+			{
+				Name = $"Line{block.Name}",
+				Points = new Vector2[]{
+					block.Position,
+					featureBlone.Position
+				},
+				DefaultColor = new Color(1, 0, 0),
+				Width = 1f,
+			};
+			this.AddChild(line);
 		}
+		UpdateDic<Block, Sprite2D>(block, featureBlone, bloneDic);
 	}
 
-	public void UpdateColor(Dictionary<Vector2, Color> ColorDic, Dictionary<Block, Sprite2D> BlockBlones)
+	/// <summary>
+	/// 更新字典中的键值对。
+	/// </summary>
+	/// <typeparam name="T">键的类型。</typeparam>
+	/// <typeparam name="U">值的类型。</typeparam>
+	/// <param name="key">键。</param>
+	/// <param name="value">值。</param>
+	/// <param name="dic">字典。</param>
+	private void UpdateDic<[MustBeVariant] T, [MustBeVariant] U>(T key, U value, Dictionary<T, U> dic)
+	{
+		dic[key] = value; // 简化字典更新逻辑
+	}
+
+	/// <summary>
+	/// 更新地图中每个方块的颜色。
+	/// </summary>
+	/// <param name="colorDic">点和颜色的对应关系字典。</param>
+	/// <param name="blockBlones">每个方块对应的特征点字典。</param>
+	public void UpdateColor(Dictionary<Vector2, Color> colorDic, Dictionary<Block, Sprite2D> blockBlones)
 	{
 		foreach (Node node in this.GetChildren())
-		{	
+		{
 			if (node is Block)
 			{
 				Block block = (Block)node;
-				if (BlockBlones.TryGetValue(block, out Sprite2D featurePoint) && ColorDic.TryGetValue(featurePoint.Position, out Color color))
+				if (blockBlones.TryGetValue(block, out Sprite2D featurePoint) && colorDic.TryGetValue(featurePoint.Position, out Color color))
 				{
 					block.Modulate = color;
 				}
-				else
-				{
-					GD.Print(featurePoint.Position,"颜色不存在");
-				}
-			}	
+			}
 
 			if (node is Line2D)
 			{
 				this.RemoveChild(node);
 			}
 		}
-
-		
 	}
 
-	private Vector2 GetCenterPosition(Dictionary<Block, Sprite2D> dictionary, Sprite2D FeaturePoint)
+	/// <summary>
+	/// 获取特征点的中心位置。
+	/// </summary>
+	/// <param name="dictionary">方块对应的特征点字典。</param>
+	/// <param name="featurePoint">特征点。</param>
+	/// <returns>特征点的中心位置。</returns>
+	private Vector2 GetCenterPosition(Dictionary<Block, Sprite2D> dictionary, Sprite2D featurePoint)
 	{
 		float sumX = 0;
 		float sumY = 0;
@@ -280,7 +226,7 @@ public partial class MapCreater : Node2D
 
 		foreach (Pair pair in dictionary)
 		{
-			if (pair.Value == FeaturePoint)
+			if (pair.Value == featurePoint)
 			{
 				sumX += pair.Key.Position.X;
 				sumY += pair.Key.Position.Y;
@@ -294,49 +240,76 @@ public partial class MapCreater : Node2D
 		return new Vector2(averageX, averageY);
 	}
 
-	/// <summary>
-	/// 此方法会自动通过起始点来遍历整个网,并分配颜色，确保没有重复颜色
-	/// </summary>
-	/// <param name="ColorDic">储存颜色与点的对应关系的字典</param>
-	/// <param name="point">需要分配的点</param>
-	private void AllocateColor(Point point)
+	public PointList FinishPoints= new PointList();
+	private void AllocateColor(Point startPoint)
 	{
-		Point NextPoint = null;
+		// 检查邻居的逻辑是否正确
+		FinishPoints.Add(startPoint);
 
-		// 调用时分配给自己一个颜色
+		foreach (Point neighbor in startPoint.Neighbors)
+		{
+			this.AddChild(new Line2D(){ Points = [startPoint.Position, neighbor.Position] });
+		}
+
+		Color aimColor = new Color();
 		foreach (Color color in ColorPool)
 		{
 			bool isRepeat = false;
-			foreach (Point neighbor in point.Neighbors)
+			foreach (Point neighbor in startPoint.Neighbors)
 			{
 				if (ColorDic.ContainsKey(neighbor.Position) && ColorDic[neighbor.Position].Equals(color))
 				{
-					GD.Print("重复啦!");
 					isRepeat = true;
 					break;
 				}
 			}
-			
+
 			if (!isRepeat)
 			{
-				ColorDic.Add(point.Position, color);
+				aimColor = color;
 				break;
 			}
 		}
 
-		// 决定递归对象
-		foreach (Point p in point.Neighbors)
+		if (aimColor == default)
 		{
-			if (!ColorDic.ContainsKey(p.Position))
+			aimColor = new Color(1f, 1f, 1f, 1f);
+		}
+
+		// 尝试上色
+		ColorDic.Add(startPoint.Position, aimColor);
+
+		foreach (Point neighbor in startPoint.Neighbors)
+		{
+			if (!FinishPoints.Contains(neighbor))
 			{
-				NextPoint = p;
+				AllocateColor(neighbor);
 			}
 		}
 
-		if (NextPoint != null)
-		{
-			AllocateColor(NextPoint);
-		}
-    }
-}
+	}
 
+	/// <summary>
+	/// 统计每个特征点对应的方块数量。
+	/// </summary>
+	/// <param name="blockBlones">每个方块对应的特征点字典。</param>
+	/// <returns>每个特征点对应的方块数量字典。</returns>
+	private Dictionary<Sprite2D, int> CountBlockNumbers(Dictionary<Block, Sprite2D> blockBlones)
+	{
+		Dictionary<Sprite2D, int> blockNumber = new Dictionary<Sprite2D, int>();
+
+		foreach (Pair pair in blockBlones)
+		{
+			if (blockNumber.ContainsKey(pair.Value))
+			{
+				blockNumber[pair.Value]++;
+			}
+			else
+			{
+				blockNumber[pair.Value] = 1;
+			}
+		}
+
+		return blockNumber;
+	}
+}
