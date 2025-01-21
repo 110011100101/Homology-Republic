@@ -1,7 +1,6 @@
 public class air : GameMaterial
 {
     string texturePackName;
-    public air(){} 
 
     public air(string TexturePackName)
     {
@@ -92,7 +91,6 @@ public class earth : GameMaterial
 public class water : GameMaterial
 {
     private string texturePackName;
-    public water(){}
     public water(string TexturePackName)
     {
         texturePackName = TexturePackName;

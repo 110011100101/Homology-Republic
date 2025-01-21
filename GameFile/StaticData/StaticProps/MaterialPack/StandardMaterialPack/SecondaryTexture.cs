@@ -2,6 +2,13 @@ using System.Collections.ObjectModel;
 
 public class cloud : air
 {
+    private string texturePackName;
+
+    public cloud(string TexturePackName) : base(TexturePackName)
+    {
+        texturePackName = TexturePackName;
+    }
+    
     public int deltaGrayLevel; // 灰度等级
 
     public override string Name => "cloud";
@@ -9,6 +16,13 @@ public class cloud : air
 
 public class ice : water
 {
+    private string texturePackName;
+
+    public ice(string TexturePackName) : base(TexturePackName)
+    {
+        texturePackName = TexturePackName;
+    }
+
     public override string Name => "ice";
     public int melitingSpeed_basic; // 基础融化速度
     public int meltingSpeed; // 实际的融化速度
@@ -16,6 +30,13 @@ public class ice : water
 
 public class snow : water
 {
+    private string texturePackName;
+
+    public snow(string TexturePackName) : base(TexturePackName)
+    {
+        texturePackName = TexturePackName;
+    }
+
     public override string Name => "snow";
 }
 
