@@ -2,6 +2,7 @@ using Godot;
 using Godot.Collections;
 using RoseIsland.Library.Algorithm.DelaunayTriangle;
 using RoseIsland.Library.CalculationTool.CoordinateConverter;
+using RoseIsland.Library.CalculationTool.Determinant;
 using System;
 using System.Threading.Tasks;
 using System.Linq;
@@ -339,7 +340,6 @@ public partial class MapCreater : Node2D
 
 	private void ToLand(Block block)
 	{
-		
 		block.ChangeGroundMaterial(new earth(data.TexturePackName));
 		block.Modulate = new Color(1.0f, 1.0f, 1.0f, 1.0f);
 	}
@@ -369,9 +369,155 @@ public partial class MapCreater : Node2D
 		return blockNumber;
 	}
 
-	public void MovePlate(Dictionary<Block, Sprite2D> blockBlones, Dictionary<Sprite2D, int> blockNumber, Dictionary<Sprite2D, bool> oceanStatus)
+	public void MovePlate(SpriteList featurePoints, Dictionary<Block, Sprite2D> blockBlones, Dictionary<Sprite2D, int> blockNumber, Dictionary<Sprite2D, bool> oceanStatus)
 	{
+		// 构建板块移动方向
+		Dictionary<Sprite2D, Vector2> moveDirections = new Dictionary<Sprite2D, Vector2>();
+		Dictionary<Block, Topography> topographyDic = new Dictionary<Block, Topography>();
+		Dictionary<Block, int> blockHeight = new Dictionary<Block, int>();
+
+		// 初始化高度
+		foreach (Pair pair in blockBlones)
+		{
+			blockHeight.Add(pair.Key, 0); 
+		}
+
+		// 给板块随机的移动方向
+		Random rand = new Random();
+		foreach (Sprite2D featurePoint in featurePoints)
+		{
+			float angle = (float)(rand.NextDouble() * 2 * Math.PI); // 随机角度
+			Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
+			moveDirections.Add(featurePoint, direction);
+		}
+
+		// 针对每个Block检测
+		foreach (Node2D node in GetChildren())
+		{
+			if (node is Block)
+			{
+				Block block = (Block)node;
+				Block neighborBlock = null;
+				bool isBoundary = false;
+				
+				// 检测四向方块
+				for (int i = -1; i < 1; i++)
+				for (int j = -1; j < 1; j++)
+				{
+					Pair nearPair = blockBlones.First(x => x.Key.Position == block.Position + new Vector2(i, j));
+
+					// 排除自己以及四角方块
+					if (Math.Abs(i) + Math.Abs(j) == 1 && nearPair.Key != block)
+					{
+						// 判断是否为边界
+						if (blockBlones[block] != nearPair.Value)
+						{
+							isBoundary = true;
+							neighborBlock = nearPair.Key;
+						}
+					}
+				}
+
+				if (isBoundary)
+				{
+					// 候选结果: 山脉,火山,裂谷,洋中脊
+					// 将自己的板块与对面板块的比较
+					int blockState = oceanStatus[blockBlones[block]] ? 0 : 1;
+					int neighborBlockState = oceanStatus[blockBlones[neighborBlock]] ? 0 : 1;
+					// 碰撞返回➕,否则返回➖
+					int moveState =  isCollision(blockBlones, moveDirections, block, neighborBlock) ? blockState + neighborBlockState : blockState - neighborBlockState;
+
+					switch (moveState)
+					{
+						case 0:
+							if (blockState == 1)
+								SetRiftValley(block); // 调用裂谷设置方法
+							else
+								SetMidOceanRidge(block); // 调用洋中脊设置方法
+							break;
+						case 1:
+							SetVolcano(block); // 调用火山设置方法
+							break;
+						case 2:
+							SetMountainRange(block, topographyDic, blockHeight); // 调用山脉设置方法
+							break;
+						default:
+							GD.Print("结果错误");
+							break;
+					}
+				}
+				else
+				{
+					SetIslandArc(block); // 调用岛弧设置方法
+				}
+			}
+				// 放置盆地
+		}
+	}
+
+	private void SetMountainRange(Block block,Dictionary<Block, Topography> topographyDic, Dictionary<Block, int> blockHeight)
+	{
+		// 山脉的设置逻辑
+		// 更新字典
+		// 放置山的icon
 		
 	}
 
+	private void SetVolcano(Block block)
+	{
+		// 火山的设置逻辑
+	}
+
+	private void SetRiftValley(Block block)
+	{
+		// 裂谷的设置逻辑
+	}
+
+	private void SetMidOceanRidge(Block block)
+	{
+		// 洋中脊的设置逻辑
+	}
+
+	private void SetIslandArc(Block block)
+	{
+		// 岛弧的设置逻辑
+	}
+
+	private void SetBasin(Block block)
+	{
+		// 盆地的设置逻辑
+	}
+
+	private void SetAbyssalPlain(Block block)
+	{
+		// 海盆的设置逻辑
+	}
+
+	private bool isCollision(Dictionary<Block, Sprite2D> blockBlones, Dictionary<Sprite2D, Vector2> moveDirections, Block A, Block B)
+	{
+		// 获取A和B的移动方向向量
+		Vector2 directionA = moveDirections[blockBlones[A]];
+		Vector2 directionB = moveDirections[blockBlones[B]];
+
+		// 构建A旋转90°后的向量
+		Vector2 rotatedA = new Vector2(-directionA.Y, directionA.X);
+
+		// 将90A和B转写成行列式
+		double[,] matrix = new double[2, 2];
+		matrix[0, 0] = rotatedA.X;
+		matrix[0, 1] = rotatedA.Y;
+		matrix[1, 0] = directionB.X;
+		matrix[1, 1] = directionB.Y;
+
+		// 使用工具计算行列式的正负
+		int determinantSign = Determinant.GetDeterminantSign(matrix);
+
+		// 若是夹钝角且在此向量顺时针90°的向量左侧，则为碰撞
+		if (!Determinant.IsAcuteAngle(directionA, directionB))
+		{
+			return determinantSign > 0 ? true : false;
+		}
+		return false;
+	}
+	
 }

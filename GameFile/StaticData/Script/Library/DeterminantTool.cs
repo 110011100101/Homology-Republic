@@ -1,5 +1,6 @@
 namespace RoseIsland.Library.CalculationTool.Determinant
 {
+    using Godot;
     public static class Determinant
     {
         // 求取三阶行列式的正负
@@ -60,6 +61,16 @@ namespace RoseIsland.Library.CalculationTool.Determinant
             }
 
             return det;
+        }
+
+        // 判断两个向量的夹角
+        public static bool IsAcuteAngle(Vector2 a, Vector2 b)
+        {
+            // 计算点积
+            float dotProduct = a.Dot(b);
+
+            // 如果点积大于0，则夹角为锐角
+            return dotProduct > 0;
         }
     }
 }
