@@ -5,7 +5,7 @@ public partial class Data : Node
 {
 	// 材质包数据
 	[Export]
-	public string TexturePackName;
+	public TileSet TexturePack;
 
 	// 创建世界数据4
 	[Export]

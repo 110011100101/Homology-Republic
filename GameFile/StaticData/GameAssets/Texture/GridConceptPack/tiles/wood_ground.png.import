@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b6fhk55hxuxs"
-path="res://.godot/imported/wood_ground.png-de09a402bd54c0e9650c3b9929e703a1.ctex"
+path="res://.godot/imported/Wood_Ground.png-14a4373ee7d9e115cc6a3902ba456a9e.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/wood_ground.png"
-dest_files=["res://.godot/imported/wood_ground.png-de09a402bd54c0e9650c3b9929e703a1.ctex"]
+source_file="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/Wood_Ground.png"
+dest_files=["res://.godot/imported/Wood_Ground.png-14a4373ee7d9e115cc6a3902ba456a9e.ctex"]
 
 [params]
 

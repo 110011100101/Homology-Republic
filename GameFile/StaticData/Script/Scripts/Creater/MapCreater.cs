@@ -9,17 +9,16 @@ using System.Linq;
 
 using Color = Godot.Color;
 using Vector2 = Godot.Vector2;
-using SpriteList = System.Collections.Generic.List<Godot.Sprite2D>;
+using SpriteList = System.Collections.Generic.List<Godot.Node2D>;
 using VectorList = System.Collections.Generic.List<Godot.Vector2>;
 using PointList = System.Collections.Generic.List<Point>;
 using ColorList = System.Collections.Generic.HashSet<Godot.Color>;
 using TaskList = System.Collections.Generic.List<System.Threading.Tasks.Task>;
-using Pair = System.Collections.Generic.KeyValuePair<Block, Godot.Sprite2D>;
+using Pair = System.Collections.Generic.KeyValuePair<Godot.Vector2I, Godot.Vector2>;
 
 public partial class MapCreater : Node2D
 {
 	private Data data;
-	public Dictionary<Vector2, Color> ColorDic = new Dictionary<Vector2, Color>();      // 记录点和颜色的对应关系
 
 	// 颜色池
 	private ColorList ColorPool = new ColorList() {
@@ -39,465 +38,317 @@ public partial class MapCreater : Node2D
 	{
 	}
 
-	public async void Main()
+	public void Main()
 	{
-		Random rand = new Random();                                                     // 随机数生成器
-		SpriteList featurePoints = new SpriteList();                                    // 存放特征点
-		VectorList vectors = new VectorList();                                          // 导入德劳内三角的合法点集
-		Dictionary<Block, Sprite2D> blockBlones = new Dictionary<Block, Sprite2D>();    // 储存每个方块对应的特征点
-		Dictionary<Sprite2D, int> blockNumber = new Dictionary<Sprite2D, int>();        // 储存每个区块的方格数量 
-		Dictionary<Sprite2D, bool> oceanStatus = new Dictionary<Sprite2D, bool>();      // 储存每个特征点的海陆状态
-
+		TileMapLayer map = new TileMapLayer() { TileSet = data.TexturePack }; // 地图层
+		
 		// 生成地基
-		await CreateBaseMap();
+		AddChild(map);
+		CreateBaseMap(map);
+
+		VectorList featurePoints = new VectorList(); // 特征点列表
 
 		// 选定特征点
-		GenerateFeaturePoints(featurePoints, rand);
+		GenerateFeaturePoints(featurePoints);
+
+		Dictionary<Vector2I, Vector2> cellBlones = new Dictionary<Vector2I, Vector2>(); // <单元格:特征点>
 
 		// 收敛
-		blockBlones = Convergence(featurePoints);
+		cellBlones = Convergence(featurePoints, cellBlones, map);
 
-		// 根据特征点清单构建点集
-		vectors.AddRange(featurePoints.Select(x => new Vector2(x.Position.X, x.Position.Y)));
+		Dictionary<Vector2, int> cellNumber = CountCells(cellBlones);          			  // 储存每个区块的方格数量 
+		Dictionary<Vector2, bool> oceanStatus = new Dictionary<Vector2, bool>();          // 储存每个特征点的海陆状态
 
-		// 德劳内三角剖分输出点集
-		Point startPoint = DelaunayTriangle.Main(vectors, (int)CoordinateConverter.ToRealPosition(new Vector2(data.MapSize, data.MapSize)).X);
-
-		// 颜色分配
-		AllocateColor(startPoint, new PointList());
-
-		// 异步上色
-		await Task.Run(() => CallDeferred(nameof(UpdateColor), ColorDic, blockBlones) );
-
-		// 统计每个特征点对应的方块数量
-		blockNumber = CountBlockNumbers(blockBlones);
+		AllocateOcean(map, cellNumber, featurePoints, cellBlones);
 
 		// 贪心算法分配海陆区块
-		AllocateOcean(featurePoints, blockNumber, oceanStatus, blockBlones);
 
-		// 板块移动
-		
+		// // 板块移动
+		// MovePlate(featurePoints, cellBlones, cellNumber, oceanStatus);
 	}
 
-	private async Task CreateBaseMap()
+	/// <summary>
+	/// 用传入的<paramref name="Map"/>创建一个矩阵地图
+	/// </summary>
+	/// <param name="Map">地图层</param>
+	private void CreateBaseMap(TileMapLayer Map)
 	{
-		TaskList tasks= new TaskList(); 
-
-		for (int i = 0; i < data.MapSize; i++)
-		{
-			tasks.Add(Task.Run(() =>
-			{
-				Enumerable.Range(0, data.MapSize).ToList().ForEach(j => CallDeferred(nameof(CreateBlock), new Vector2(i, j)));
-			}));
-			await Task.Delay(1);
-		}
-		await Task.WhenAll(tasks);
+		for (int x = 0; x < data.MapSize; x++)
+			for (int y = 0; y < data.MapSize; y++)
+				Map.SetCell(new Vector2I(x, y), 0, new Vector2I(0, 0));
 	}
 
-	private void CreateBlock(Vector2 blockPosition)
-	{
-		Block block = ((PackedScene)GD.Load(PrefebPath.BlockPath)).Instantiate<Block>();
-
-		block.Position = CoordinateConverter.ToRealPosition(blockPosition);
-		block.Name = $"{blockPosition}";
-		this.AddChild(block);
-	}
-
-	private void GenerateFeaturePoints(SpriteList featurePoints, Random rand)
+	/// <summary>
+	/// <para>为传入的<paramref name="featurePoints"/>生成随机的特征点</para>
+	/// <para>随机数的范围是地图的边长, 而数量则是规定的板块数量</para>
+	/// </summary>
+	/// <param name="featurePoints">特征点容器</param>
+	private void GenerateFeaturePoints(VectorList featurePoints)
 	{
 		while (featurePoints.Count < data.NumberOfPlates)
 		{
-			Sprite2D featurePoint = new Sprite2D()
-			{
-				Position = CoordinateConverter.ToRealPosition(new Vector2(rand.Next(data.MapSize), rand.Next(data.MapSize))),
-				Name = $"FeaturePoint{Position}",
-				Texture = (Texture2D)GD.Load(TexturePath.GetFeaturePointTexturePath(data.TexturePackName)),
-				Scale = new Vector2(0.1f, 0.1f)
-			};
+			Random rand = new Random();
+
+			Vector2 featurePoint = new Vector2(rand.Next(0, data.MapSize), rand.Next(0, data.MapSize));
 
 			if (!featurePoints.Contains(featurePoint))
-			{
 				featurePoints.Add(featurePoint);
-			}
 		}
 	}
 
-	private Dictionary<Block, Sprite2D> Convergence(SpriteList featurePoints)
+	/// <summary>
+	/// 使用K-means算法，将特征点聚类为板块
+	/// </summary>
+	/// <param name="featurePoints">特征点</param>
+	/// <param name="cellBlones">单元格的归属数据(板块)</param>
+	private Dictionary<Vector2I, Vector2> Convergence(VectorList featurePoints, Dictionary<Vector2I, Vector2> cellBlones, TileMapLayer map)
 	{
 		bool isConvergenced = false;
-		Dictionary<Block, Sprite2D> blockBlones = new Dictionary<Block, Sprite2D>();
 
-		// 迭代收敛算法，直到每个特征点的位置不再发生变化
 		while (!isConvergenced)
 		{
-			blockBlones = new Dictionary<Block, Sprite2D>();
+			cellBlones = new Dictionary<Vector2I, Vector2>();
 
-			foreach (Node2D block in GetChildren())
-			{
-				if (block is Block)
-				{
-					PickFeaturePoint(featurePoints, (Block)block, blockBlones);
-				}
-			}
+			// 选择距离最近的特征点作为归属
+			foreach (Vector2I cell in map.GetUsedCells())
+				ChooseFeaturePoint(cell, featurePoints, cellBlones);
 
 			// 检查所有特征点是否收敛
-			isConvergenced = featurePoints.All(featurePoint => featurePoint.Position == GetCenterPosition(blockBlones, featurePoint));
+			isConvergenced = featurePoints.All(featurePoint => featurePoint == GetCenterPosition(cellBlones, featurePoint));
 
 			if (!isConvergenced)
-			{
-				// 更新特征点位置为对应方块的中心位置
-				featurePoints.ForEach(featurePoint => featurePoint.Position = GetCenterPosition(blockBlones, featurePoint));
-			}
+	            for (int i = 0; i < featurePoints.Count; i++)
+					// 更新特征点位置为对应方块的中心位置
+    	            featurePoints[i] = GetCenterPosition(cellBlones, featurePoints[i]);
 		}
-		return blockBlones;
+
+		return cellBlones;
 	}
 
-	private void PickFeaturePoint(SpriteList featurePoints, Block block, Dictionary<Block, Sprite2D> bloneDic)
+	/// <summary>
+	/// 为单元格在特征点上选择最近的点然后更新归属信息
+	/// </summary>
+	/// <param name="featurePoints">特征点</param>
+	/// <param name="cell"></param>
+	/// <param name="bloneDic"></param>
+	private void ChooseFeaturePoint(Vector2I cell, VectorList featurePoints, Dictionary<Vector2I, Vector2> cellBlones)
 	{
-		Sprite2D featureBlone = featurePoints.OrderBy(featurePoint => block.Position.DistanceTo(featurePoint.Position)).First();
+		// 用OrderBy()按照距离排序, 然后取第一个
+		Vector2 featurePoint = featurePoints.OrderBy(fp => fp.DistanceTo(cell)).First();
 
-		if (this.HasNode($"Line{block.Name}"))
-		{
-			GetNode<Line2D>($"Line{block.Name}").RemovePoint(1);
-			GetNode<Line2D>($"Line{block.Name}").AddPoint(featureBlone.Position);
-		}
+		// 更新信息
+		if (cellBlones.ContainsKey(cell))
+			cellBlones[cell] = featurePoint;
 		else
-		{
-			Line2D line = new Line2D()
-			{
-				Name = $"Line{block.Name}",
-				Points = new Vector2[]{
-					block.Position,
-					featureBlone.Position
-				},
-				DefaultColor = new Color(1, 0, 0),
-				Width = 1f,
-			};
-			this.AddChild(line);
-		}
-		UpdateDic<Block, Sprite2D>(block, featureBlone, bloneDic);
+			cellBlones.Add(cell, featurePoint);
 	}
 
-	private void UpdateDic<[MustBeVariant] T, [MustBeVariant] U>(T key, U value, Dictionary<T, U> dic)
+	/// <summary>
+	/// 获取传入的特征点在点集的中心位置
+	/// </summary>
+	/// <param name="cellBlones"></param>
+	/// <param name="featurePoint"></param>
+	/// <returns></returns>
+	private Vector2 GetCenterPosition(Dictionary<Vector2I, Vector2> cellBlones, Vector2 featurePoint)
 	{
-		dic[key] = value; // 简化字典更新逻辑
-	}
-
-	public void UpdateColor(Dictionary<Vector2, Color> colorDic, Dictionary<Block, Sprite2D> blockBlones)
-	{
-		foreach (Node node in this.GetChildren())
-		{
-			if (node is Block)
-			{
-				Block block = (Block)node;
-				if (blockBlones.TryGetValue(block, out Sprite2D featurePoint) && colorDic.TryGetValue(featurePoint.Position, out Color color))
-				{
-					block.Modulate = color;
-				}
-			}
-
-			if (node is Line2D)
-			{
-				this.RemoveChild(node);
-			}
-		}
-	}
-
-	private Vector2 GetCenterPosition(Dictionary<Block, Sprite2D> dictionary, Sprite2D featurePoint)
-	{
-		float sumX = 0;
-		float sumY = 0;
+		Vector2 sum = new Vector2(0, 0);
 		int count = 0;
 
-		dictionary.Where(pair => pair.Value == featurePoint).ToList().ForEach(pair =>
+		// 遍历板块的所有单元格
+		// 获取单元格数量以及XY坐标的和
+		cellBlones.Where(pair => pair.Value == featurePoint).ToList().ForEach(pair =>
 		{
-			sumX += pair.Key.Position.X;
-			sumY += pair.Key.Position.Y;
+			sum += pair.Key;
 			count++;
 		});
 
-		float averageX = sumX / count;
-		float averageY = sumY / count;
+		float averageX = sum.X / count;
+		float averageY = sum.Y / count;
 
 		return new Vector2(averageX, averageY);
 	}
 
-	private void AllocateColor(Point startPoint, PointList finishPoints)
+	/// <summary>
+	/// 统计每个特征点的单元格数量并返回
+	/// </summary>
+	/// <param name="cellBlones"></param>
+	/// <returns></returns>
+	private Dictionary<Vector2, int> CountCells(Dictionary<Vector2I, Vector2> cellBlones)
 	{
-		// 检查邻居的逻辑是否正确
-		finishPoints.Add(startPoint);
+		
+		Dictionary<Vector2, int> cellNumber = new Dictionary<Vector2, int>();
 
-		// 绘制邻居连接线
-		foreach (Point neighbor in startPoint.Neighbors)
-		{
-			this.AddChild(new Line2D(){ Points = [startPoint.Position, neighbor.Position] });
-		}
+		foreach (Pair pair in cellBlones)
+			if (cellNumber.ContainsKey(pair.Value))
+				cellNumber[pair.Value]++;
+			else
+				cellNumber.Add(pair.Value, 1);
 
-		// 为当前点分配颜色，确保邻居点颜色不同
-		Color aimColor = new Color();
-		foreach (Color color in ColorPool)
-		{
-			bool isRepeat = false;
-			foreach (Point neighbor in startPoint.Neighbors)
-			{
-				if (ColorDic.ContainsKey(neighbor.Position) && ColorDic[neighbor.Position].Equals(color))
-				{
-					isRepeat = true;
-					break;
-				}
-			}
-
-			if (!isRepeat)
-			{
-				aimColor = color;
-				break;
-			}
-		}
-
-		if (aimColor == default)
-		{
-			// 默认颜色为白色
-			aimColor = new Color(1f, 1f, 1f, 1f);
-		}
-
-		// 尝试上色
-		ColorDic.Add(startPoint.Position, aimColor);
-
-		// 递归为邻居点分配颜色
-		foreach (Point neighbor in startPoint.Neighbors)
-		{
-			if (!finishPoints.Contains(neighbor))
-			{
-				AllocateColor(neighbor, finishPoints);
-			}
-		}
-
+		return cellNumber;
 	}
 
-	private async void AllocateOcean(SpriteList featurePoints, Dictionary<Sprite2D, int> blockNumber, Dictionary<Sprite2D, bool> oceanStatus,  Dictionary<Block, Sprite2D> blockBlones)
+	private void AllocateOcean(TileMapLayer map,  Dictionary<Vector2, int> cellNumber, VectorList featurePoints, Dictionary<Vector2I, Vector2> cellBlones)
 	{
-		// 尝试不同海陆组合并挑选出最接近海陆比的组合
-		float targetOceanRatio = data.OceanToLandRatio; 
-		int totalBlocks = blockNumber.Values.Sum();
-		int targetOceanBlocks = (int)(totalBlocks * (targetOceanRatio / 100));
+		int aimNum = (int)(cellNumber.Values.Sum() * (data.OceanToLandRatio / 100));
+		int count = 0;
 
-		// 使用贪心算法分配海陆区块
-		SpriteList sortedFeaturePoints = featurePoints.OrderBy(fp => blockNumber[fp]).ToList();
-		int currentOceanBlocks = 0;
-
-		await Task.Delay(1000);
-
-		foreach (Sprite2D featurePoint in sortedFeaturePoints)
+		foreach (Vector2 feature in featurePoints)
 		{
-			TaskList tasks = new TaskList();
-			if (currentOceanBlocks < targetOceanBlocks)
+			if (count < aimNum)
 			{
-				// 分配为海洋
-				foreach (Pair pair in blockBlones)
-				{
-                    tasks.Add(Task.Run(() =>
-                    {
-                        if (pair.Value == featurePoint)
-                        {
-                            CallDeferred(nameof(ToOcean), pair.Key);
-                            currentOceanBlocks++;
-
-                        }
-                    }));
-
-					if (pair.Value == featurePoint)
-					{
-						// 延迟以展示变化过程
-						await Task.Delay(1);
-					}
-				}
-				oceanStatus[featurePoint] = true;
+				foreach (Vector2I cell in cellBlones.Keys.Where(cell => cellBlones[cell] == feature))
+					ToOcean(map, cell);
+			
+				count += cellNumber[feature];
 			}
 			else
 			{
-				// 分配为陆地
-				foreach (Pair pair in blockBlones)
-				{
-					tasks.Add(Task.Run(() =>
-                    {
-						if (pair.Value == featurePoint)
-						{
-							CallDeferred(nameof(ToLand), pair.Key);
-						}
-                    }));
-
-					if (pair.Value == featurePoint)
-					{
-						// 延迟以展示变化过程
-						await Task.Delay(1);
-					}
-				}
-				oceanStatus[featurePoint] = false;
-			}
-			await Task.WhenAll(tasks);
-		}
-	}
-
-	private void ToLand(Block block)
-	{
-		block.ChangeGroundMaterial(new earth(data.TexturePackName));
-		block.Modulate = new Color(1.0f, 1.0f, 1.0f, 1.0f);
-	}
-
-	private void ToOcean(Block block)
-	{
-		block.ChangeGroundMaterial(new water(data.TexturePackName));
-		block.Modulate = new Color(1.0f, 1.0f, 1.0f, 1.0f);
-	}
-
-	private Dictionary<Sprite2D, int> CountBlockNumbers(Dictionary<Block, Sprite2D> blockBlones)
-	{
-		Dictionary<Sprite2D, int> blockNumber = new Dictionary<Sprite2D, int>();
-
-		foreach (Pair pair in blockBlones)
-		{
-			if (blockNumber.ContainsKey(pair.Value))
-			{
-				blockNumber[pair.Value]++;
-			}
-			else
-			{
-				blockNumber[pair.Value] = 1;
+				foreach (Vector2I cell in cellBlones.Keys.Where(cell => cellBlones[cell] == feature))
+					ToLand(map, cell);
 			}
 		}
 
-		return blockNumber;
 	}
 
-	public void MovePlate(SpriteList featurePoints, Dictionary<Block, Sprite2D> blockBlones, Dictionary<Sprite2D, int> blockNumber, Dictionary<Sprite2D, bool> oceanStatus)
+	private void ToLand(TileMapLayer map, Vector2I cell)
+	{
+		// FIXME: 这里没有好好规定图源
+		map.SetCell(cell, 3, new Vector2I(0, 0));
+	}
+
+	private void ToOcean(TileMapLayer map, Vector2I cell)
+	{
+		// FIXME: 这里没有好好规定图源
+		map.SetCell(cell, 5, new Vector2I(0, 0));
+	}
+
+/*
+	public void MovePlate(SpriteList featurePoints, Dictionary<Vector2I, Node2D> cellBlones, Dictionary<Node2D, int> cellNumber, Dictionary<Node2D, bool> oceanStatus)
 	{
 		// 构建板块移动方向
-		Dictionary<Sprite2D, Vector2> moveDirections = new Dictionary<Sprite2D, Vector2>();
-		Dictionary<Block, Topography> topographyDic = new Dictionary<Block, Topography>();
-		Dictionary<Block, int> blockHeight = new Dictionary<Block, int>();
+		Dictionary<Node2D, Vector2> moveDirections = new Dictionary<Node2D, Vector2>();
+		Dictionary<Vector2I, Topography> topographyDic = new Dictionary<Vector2I, Topography>();
+		Dictionary<Vector2I, int> cellHeight = new Dictionary<Vector2I, int>();
 
 		// 初始化高度
-		foreach (Pair pair in blockBlones)
+		foreach (Pair pair in cellBlones)
 		{
-			blockHeight.Add(pair.Key, 0); 
+			cellHeight.Add(pair.Key, 0);
 		}
 
 		// 给板块随机的移动方向
 		Random rand = new Random();
-		foreach (Sprite2D featurePoint in featurePoints)
+		foreach (Node2D featurePoint in featurePoints)
 		{
 			float angle = (float)(rand.NextDouble() * 2 * Math.PI); // 随机角度
 			Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
 			moveDirections.Add(featurePoint, direction);
 		}
 
-		// 针对每个Block检测
-		foreach (Node2D node in GetChildren())
+		// 针对每个Vector2I检测
+		foreach (Vector2I node in GetChildren().OfType<Vector2I>)
 		{
-			if (node is Block)
-			{
-				Block block = (Block)node;
-				Block neighborBlock = null;
-				bool isBoundary = false;
-				
-				// 检测四向方块
-				for (int i = -1; i < 1; i++)
+			Vector2I cell = (Vector2I)node;
+			Vector2I neighborVector2I = null;
+			bool isBoundary = false;
+
+			// 检测四向方块
+			for (int i = -1; i < 1; i++)
 				for (int j = -1; j < 1; j++)
 				{
-					Pair nearPair = blockBlones.First(x => x.Key.Position == block.Position + new Vector2(i, j));
+					Pair nearPair = cellBlones.First(x => x.Key.Position == cell.Position + new Vector2(i, j));
 
 					// 排除自己以及四角方块
-					if (Math.Abs(i) + Math.Abs(j) == 1 && nearPair.Key != block)
+					if (Math.Abs(i) + Math.Abs(j) == 1 && nearPair.Key != cell)
 					{
 						// 判断是否为边界
-						if (blockBlones[block] != nearPair.Value)
+						if (cellBlones[cell] != nearPair.Value)
 						{
 							isBoundary = true;
-							neighborBlock = nearPair.Key;
+							neighborVector2I = nearPair.Key;
 						}
 					}
 				}
 
-				if (isBoundary)
-				{
-					// 候选结果: 山脉,火山,裂谷,洋中脊
-					// 将自己的板块与对面板块的比较
-					int blockState = oceanStatus[blockBlones[block]] ? 0 : 1;
-					int neighborBlockState = oceanStatus[blockBlones[neighborBlock]] ? 0 : 1;
-					// 碰撞返回➕,否则返回➖
-					int moveState =  isCollision(blockBlones, moveDirections, block, neighborBlock) ? blockState + neighborBlockState : blockState - neighborBlockState;
+			if (isBoundary)
+			{
+				// 候选结果: 山脉,火山,裂谷,洋中脊
+				// 将自己的板块与对面板块的比较
+				int cellState = oceanStatus[cellBlones[cell]] ? 0 : 1;
+				int neighborVector2IState = oceanStatus[cellBlones[neighborVector2I]] ? 0 : 1;
+				// 碰撞返回➕,否则返回➖
+				int moveState = isCollision(cellBlones, moveDirections, cell, neighborVector2I) ? cellState + neighborVector2IState : cellState - neighborVector2IState;
 
-					switch (moveState)
-					{
-						case 0:
-							if (blockState == 1)
-								SetRiftValley(block); // 调用裂谷设置方法
-							else
-								SetMidOceanRidge(block); // 调用洋中脊设置方法
-							break;
-						case 1:
-							SetVolcano(block); // 调用火山设置方法
-							break;
-						case 2:
-							SetMountainRange(block, topographyDic, blockHeight); // 调用山脉设置方法
-							break;
-						default:
-							GD.Print("结果错误");
-							break;
-					}
-				}
-				else
+				switch (moveState)
 				{
-					SetIslandArc(block); // 调用岛弧设置方法
+					case 0:
+						if (cellState == 1)
+							SetRiftValley(cell); // 调用裂谷设置方法
+						else
+							SetMidOceanRidge(cell); // 调用洋中脊设置方法
+						break;
+					case 1:
+						SetVolcano(cell); // 调用火山设置方法
+						break;
+					case 2:
+						SetMountainRange(cell, topographyDic, cellHeight); // 调用山脉设置方法
+						break;
+					default:
+						GD.Print("结果错误");
+						break;
 				}
 			}
-				// 放置盆地
+			else
+			{
+				SetIslandArc(cell); // 调用岛弧设置方法
+			}
+			// 放置盆地
 		}
 	}
 
-	private void SetMountainRange(Block block,Dictionary<Block, Topography> topographyDic, Dictionary<Block, int> blockHeight)
+	private void SetMountainRange(Vector2I cell, Dictionary<Vector2I, Topography> topographyDic, Dictionary<Vector2I, int> cellHeight)
 	{
 		// 山脉的设置逻辑
 		// 更新字典
 		// 放置山的icon
-		
+
 	}
 
-	private void SetVolcano(Block block)
+	private void SetVolcano(Vector2I cell)
 	{
 		// 火山的设置逻辑
 	}
 
-	private void SetRiftValley(Block block)
+	private void SetRiftValley(Vector2I cell)
 	{
 		// 裂谷的设置逻辑
 	}
 
-	private void SetMidOceanRidge(Block block)
+	private void SetMidOceanRidge(Vector2I cell)
 	{
 		// 洋中脊的设置逻辑
 	}
 
-	private void SetIslandArc(Block block)
+	private void SetIslandArc(Vector2I cell)
 	{
 		// 岛弧的设置逻辑
 	}
 
-	private void SetBasin(Block block)
+	private void SetBasin(Vector2I cell)
 	{
 		// 盆地的设置逻辑
 	}
 
-	private void SetAbyssalPlain(Block block)
+	private void SetAbyssalPlain(Vector2I cell)
 	{
 		// 海盆的设置逻辑
 	}
 
-	private bool isCollision(Dictionary<Block, Sprite2D> blockBlones, Dictionary<Sprite2D, Vector2> moveDirections, Block A, Block B)
+	private bool isCollision(Dictionary<Vector2I, Node2D> cellBlones, Dictionary<Node2D, Vector2> moveDirections, Vector2I A, Vector2I B)
 	{
 		// 获取A和B的移动方向向量
-		Vector2 directionA = moveDirections[blockBlones[A]];
-		Vector2 directionB = moveDirections[blockBlones[B]];
+		Vector2 directionA = moveDirections[cellBlones[A]];
+		Vector2 directionB = moveDirections[cellBlones[B]];
 
 		// 构建A旋转90°后的向量
 		Vector2 rotatedA = new Vector2(-directionA.Y, directionA.X);
@@ -518,6 +369,6 @@ public partial class MapCreater : Node2D
 			return determinantSign > 0 ? true : false;
 		}
 		return false;
-	}
-	
+	}*/
+
 }

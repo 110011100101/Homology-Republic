@@ -54,13 +54,7 @@ public partial class DelaunayTriangleTest : Node2D
         visitedPoints.Add(point);
         GD.Print($"当前点：{point.Position}");
 
-        Sprite2D sprite2D = new Sprite2D()
-        {
-            Name = $"{point.Position}",
-            Position = new Godot.Vector2(point.Position.X, point.Position.Y),
-            Texture = (Texture2D)GD.Load(TexturePath.GetFeaturePointTexturePath("GridConceptPack")),
-            Scale = new Godot.Vector2(0.1f, 0.1f)
-        };
+        Sprite2D sprite2D = new Sprite2D();
 
         AddChild(sprite2D);
 

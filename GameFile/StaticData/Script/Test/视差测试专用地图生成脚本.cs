@@ -51,7 +51,7 @@ public partial class 视差测试专用地图生成脚本 : Node2D
 	}
 
 	public void DefferMapCreater(Vector3 position){
-		MapCreater(position, new wood(packName));
+		MapCreater(position, new Wood());
 	}
 
 	/// <summary>

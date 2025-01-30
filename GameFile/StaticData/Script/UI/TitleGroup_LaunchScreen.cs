@@ -11,10 +11,10 @@ public partial class TitleGroup_LaunchScreen : Node2D
 {
 	private bool isLoadingFinished = false;
 
-	public async override void _Ready()
+	public override void _Ready()
 	{
-		Task.Run(() => CallDeferred("_LoadingAssets"));
-		Task.Run(() => _FadeIn());
+		_ = Task.Run(() => CallDeferred("_LoadingAssets"));
+		_ = Task.Run(() => _FadeIn());
 	}
 
 	public override void _Process(double delta)
@@ -55,7 +55,7 @@ public partial class TitleGroup_LaunchScreen : Node2D
 		GetNode<Data>("/root/Data").BasePlanetCreatingMenu = GD.Load<PackedScene>(ScenePath.BasePlanetCreatingMenu);
 		GetNode<Data>("/root/Data").SettingMenu = GD.Load<PackedScene>(ScenePath.SettingMenu);
 		GetNode<Data>("/root/Data").PlayGround = GD.Load<PackedScene>(ScenePath.PlayGround);
-		GetNode<Data>("/root/Data").TexturePackName = "GridConceptPack"; // FIXME: 这里没有实现更改材质包的功能
+		GetNode<Data>("/root/Data").TexturePack = ResourceLoader.Load<TileSet>("res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/GridConceptPack.tres"); // FIXME: 这里没有实现更改材质包的功能
 		
 		isLoadingFinished = true;
 	}

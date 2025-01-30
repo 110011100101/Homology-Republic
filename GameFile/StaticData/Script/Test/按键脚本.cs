@@ -18,6 +18,10 @@ public partial class 按键脚本 : Node2D
 	{
 	}
 
+	// E = 生成Worker
+	// 上下移动滚轮 = 升高和降低层高度
+	// 按住滚轮拖动 = 移动地图
+	// 轻推W键 = 操练你的比
 	public override void _Input(InputEvent @event)
 	{
 		if (@event is InputEventKey key)

@@ -17,7 +17,6 @@ public partial class Block : Sprite2D
 			floorMaterial = value;
 
 			// 更新材质图片
-			Texture = (Texture2D)GD.Load(value.FloorTexturePath);
 		}
 	}
 	private GameMaterial groundMaterial;
@@ -32,7 +31,6 @@ public partial class Block : Sprite2D
 			groundMaterial = value;
 
 			// 更新材质图片
-			Texture = (Texture2D)GD.Load(value.GroundTexturePath);
 		}
 	}
 
