@@ -335,7 +335,7 @@ public partial class MapCreater : Node2D
 						SetVolcano(cell, topographyDic, cellHeight, topographyMap, oceanStatus); // 调用火山设置方法
 						break;
 					case 2:
-						SetMountainRange(cell, topographyDic, cellHeight, topographyMap); // 调用山脉设置方法
+						SetMountainRange(cell, topographyDic, cellHeight, topographyMap, oceanStatus, map); // 调用山脉设置方法
 						break;
 					default:
 						break;
@@ -376,13 +376,30 @@ public partial class MapCreater : Node2D
 		return false;
 	}
 
-	private void SetMountainRange(Vector2I cell, Dictionary<Vector2I, Topography> topographyDic, Dictionary<Vector2I, int> cellHeight, TileMapLayer topographyMap)
+	private void SetMountainRange(Vector2I cell, Dictionary<Vector2I, Topography> topographyDic, Dictionary<Vector2I, int> cellHeight, TileMapLayer topographyMap, Dictionary<Vector2, bool> oceanStatus, TileMapLayer map)
 	{
 		// 山脉的设置逻辑
 		bool isAvailable = true;
 		Random rand = new Random();
 		int count = 0;
 		int max = rand.Next(5, 8);
+		int offset = rand.Next(-1, 2);
+		Vector2I aimCell = cell + new Vector2I(offset, 0);
+
+		// 检查目标cell合不合格,若合格就替换
+		// 不能是海洋
+		bool isOcean = oceanStatus.ContainsKey(aimCell) && oceanStatus[aimCell] == true;
+
+		// 不能在地图外
+		bool isOutOfMap = map.GetCellSourceId(aimCell) == -1;
+
+		// 不能存在任何地形
+		bool isAnyTopography = topographyDic.ContainsKey(aimCell);
+		
+		if (offset != 0 && !isOcean && !isOutOfMap && !isAnyTopography)
+		{
+			cell = aimCell;
+		}
 
 		for (int i = -10; i < 10; i++)
 		{
@@ -395,7 +412,7 @@ public partial class MapCreater : Node2D
 			}
 		}
 
-		if (count >= max )
+		if ( count >= max )
 		{
 			isAvailable = false;
 		}
