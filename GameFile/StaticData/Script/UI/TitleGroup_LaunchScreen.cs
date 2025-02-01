@@ -3,6 +3,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.ConstrainedExecution;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
@@ -55,8 +56,9 @@ public partial class TitleGroup_LaunchScreen : Node2D
 		GetNode<Data>("/root/Data").BasePlanetCreatingMenu = GD.Load<PackedScene>(ScenePath.BasePlanetCreatingMenu);
 		GetNode<Data>("/root/Data").SettingMenu = GD.Load<PackedScene>(ScenePath.SettingMenu);
 		GetNode<Data>("/root/Data").PlayGround = GD.Load<PackedScene>(ScenePath.PlayGround);
-		GetNode<Data>("/root/Data").TexturePack = ResourceLoader.Load<TileSet>("res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/GridConceptPack.tres"); // FIXME: 这里没有实现更改材质包的功能
-		
+		GetNode<Data>("/root/Data").Tiles = ResourceLoader.Load<TileSet>("res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles.tres"); // FIXME: 这里没有实现更改材质包的功能
+		GetNode<Data>("/root/Data").Topography = ResourceLoader.Load<TileSet>("res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/topography.tres"); // FIXME: 这里没有实现更改材质包的功能
+
 		isLoadingFinished = true;
 	}
 

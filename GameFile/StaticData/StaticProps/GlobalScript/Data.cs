@@ -5,7 +5,8 @@ public partial class Data : Node
 {
 	// 材质包数据
 	[Export]
-	public TileSet TexturePack;
+	public TileSet Tiles;
+	public TileSet Topography;
 
 	// 创建世界数据4
 	[Export]

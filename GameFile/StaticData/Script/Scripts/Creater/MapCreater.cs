@@ -40,8 +40,8 @@ public partial class MapCreater : Node2D
 
 	public void Main()
 	{
-		TileMapLayer map = new TileMapLayer() { TileSet = data.TexturePack }; // 地图层
-		
+		TileMapLayer map = new TileMapLayer() { TileSet = data.Tiles }; // 地图层
+
 		// 生成地基
 		AddChild(map);
 		CreateBaseMap(map);
@@ -56,15 +56,14 @@ public partial class MapCreater : Node2D
 		// 收敛
 		cellBlones = Convergence(featurePoints, cellBlones, map);
 
-		Dictionary<Vector2, int> cellNumber = CountCells(cellBlones);          			  // 储存每个区块的方格数量 
-		Dictionary<Vector2, bool> oceanStatus = new Dictionary<Vector2, bool>();          // 储存每个特征点的海陆状态
+		Dictionary<Vector2, int> cellNumber = CountCells(cellBlones);                   // 储存每个区块的方格数量 
+		Dictionary<Vector2, bool> oceanStatus = new Dictionary<Vector2, bool>();        // 储存每个特征点的海陆状态
 
-		AllocateOcean(map, cellNumber, featurePoints, cellBlones);
+		// 分配海陆区块
+		AllocateOcean(map, cellNumber, featurePoints, cellBlones, oceanStatus);
 
-		// 贪心算法分配海陆区块
-
-		// // 板块移动
-		// MovePlate(featurePoints, cellBlones, cellNumber, oceanStatus);
+		// 板块移动
+		MovePlate(featurePoints, cellBlones, cellNumber, oceanStatus, map);
 	}
 
 	/// <summary>
@@ -117,9 +116,9 @@ public partial class MapCreater : Node2D
 			isConvergenced = featurePoints.All(featurePoint => featurePoint == GetCenterPosition(cellBlones, featurePoint));
 
 			if (!isConvergenced)
-	            for (int i = 0; i < featurePoints.Count; i++)
+				for (int i = 0; i < featurePoints.Count; i++)
 					// 更新特征点位置为对应方块的中心位置
-    	            featurePoints[i] = GetCenterPosition(cellBlones, featurePoints[i]);
+					featurePoints[i] = GetCenterPosition(cellBlones, featurePoints[i]);
 		}
 
 		return cellBlones;
@@ -175,7 +174,7 @@ public partial class MapCreater : Node2D
 	/// <returns></returns>
 	private Dictionary<Vector2, int> CountCells(Dictionary<Vector2I, Vector2> cellBlones)
 	{
-		
+
 		Dictionary<Vector2, int> cellNumber = new Dictionary<Vector2, int>();
 
 		foreach (Pair pair in cellBlones)
@@ -187,7 +186,15 @@ public partial class MapCreater : Node2D
 		return cellNumber;
 	}
 
-	private void AllocateOcean(TileMapLayer map,  Dictionary<Vector2, int> cellNumber, VectorList featurePoints, Dictionary<Vector2I, Vector2> cellBlones)
+	/// <summary>
+	/// 按照海陆比分配海陆区块
+	/// </summary>
+	/// <param name="map"></param>
+	/// <param name="cellNumber"></param>
+	/// <param name="featurePoints"></param>
+	/// <param name="cellBlones"></param>
+	/// <param name="oceanStatus"></param>
+	private void AllocateOcean(TileMapLayer map, Dictionary<Vector2, int> cellNumber, VectorList featurePoints, Dictionary<Vector2I, Vector2> cellBlones, Dictionary<Vector2, bool> oceanStatus)
 	{
 		int aimNum = (int)(cellNumber.Values.Sum() * (data.OceanToLandRatio / 100));
 		int count = 0;
@@ -197,38 +204,68 @@ public partial class MapCreater : Node2D
 			if (count < aimNum)
 			{
 				foreach (Vector2I cell in cellBlones.Keys.Where(cell => cellBlones[cell] == feature))
-					ToOcean(map, cell);
-			
+					ToOcean(map, cell, oceanStatus);
+
 				count += cellNumber[feature];
 			}
 			else
 			{
 				foreach (Vector2I cell in cellBlones.Keys.Where(cell => cellBlones[cell] == feature))
-					ToLand(map, cell);
+					ToLand(map, cell, oceanStatus);
 			}
 		}
-
 	}
 
-	private void ToLand(TileMapLayer map, Vector2I cell)
+	/// <summary>
+	/// 将传入的<paramref name="cell"/>设置为陆地
+	/// </summary>
+	/// <param name="map"></param>
+	/// <param name="cell"></param>
+	private void ToLand(TileMapLayer map, Vector2I cell, Dictionary<Vector2, bool> oceanStatus)
 	{
 		// FIXME: 这里没有好好规定图源
 		map.SetCell(cell, 3, new Vector2I(0, 0));
+
+		if (oceanStatus.ContainsKey(cell))
+			oceanStatus.Add(cell, false);
+		else
+			oceanStatus[cell] = false;
 	}
 
-	private void ToOcean(TileMapLayer map, Vector2I cell)
+	/// <summary>
+	///	将传入的<paramref name="cell"/>设置为海洋
+	/// </summary>
+	/// <param name="map"></param>
+	/// <param name="cell"></param>
+	private void ToOcean(TileMapLayer map, Vector2I cell, Dictionary<Vector2, bool> oceanStatus)
 	{
 		// FIXME: 这里没有好好规定图源
 		map.SetCell(cell, 5, new Vector2I(0, 0));
+
+		if (!oceanStatus.ContainsKey(cell))
+			oceanStatus.Add(cell, true);
+		else
+			oceanStatus[cell] = true;
 	}
 
-/*
-	public void MovePlate(SpriteList featurePoints, Dictionary<Vector2I, Node2D> cellBlones, Dictionary<Node2D, int> cellNumber, Dictionary<Node2D, bool> oceanStatus)
+	/// <summary>
+	/// 生成随机板块方向并按照给定的方向模拟板块移动,其中也包含了地形的生成,方法里调用了大量的地形生成方法,不建议修改,可能会引起连带错误
+	/// </summary>
+	/// <param name="featurePoints"></param>
+	/// <param name="cellBlones"></param>
+	/// <param name="cellNumber"></param>
+	/// <param name="oceanStatus"></param>
+	/// <param name="map"></param>
+	public void MovePlate(VectorList featurePoints, Dictionary<Vector2I, Vector2> cellBlones, Dictionary<Vector2, int> cellNumber, Dictionary<Vector2, bool> oceanStatus, TileMapLayer map)
 	{
 		// 构建板块移动方向
-		Dictionary<Node2D, Vector2> moveDirections = new Dictionary<Node2D, Vector2>();
-		Dictionary<Vector2I, Topography> topographyDic = new Dictionary<Vector2I, Topography>();
-		Dictionary<Vector2I, int> cellHeight = new Dictionary<Vector2I, int>();
+		Dictionary<Vector2, Vector2> moveDirections = new Dictionary<Vector2, Vector2>();           // <特征点:移动方向>
+		Dictionary<Vector2I, Topography> topographyDic = new Dictionary<Vector2I, Topography>();    // 地形集
+		Dictionary<Vector2I, int> cellHeight = new Dictionary<Vector2I, int>();                     // 板块高度集
+		Random rand = new Random();
+		TileMapLayer topographyMap = new TileMapLayer() { TileSet = data.Topography };
+
+		AddChild(topographyMap);
 
 		// 初始化高度
 		foreach (Pair pair in cellBlones)
@@ -236,36 +273,35 @@ public partial class MapCreater : Node2D
 			cellHeight.Add(pair.Key, 0);
 		}
 
+
 		// 给板块随机的移动方向
-		Random rand = new Random();
-		foreach (Node2D featurePoint in featurePoints)
+		foreach (Vector2 featurePoint in featurePoints)
 		{
 			float angle = (float)(rand.NextDouble() * 2 * Math.PI); // 随机角度
 			Vector2 direction = new Vector2((float)Math.Cos(angle), (float)Math.Sin(angle));
 			moveDirections.Add(featurePoint, direction);
 		}
 
-		// 针对每个Vector2I检测
-		foreach (Vector2I node in GetChildren().OfType<Vector2I>)
+		// 针对每个Cell检测
+		foreach (Vector2I cell in map.GetUsedCells())
 		{
-			Vector2I cell = (Vector2I)node;
-			Vector2I neighborVector2I = null;
+			Vector2I neighbor = new();
 			bool isBoundary = false;
 
 			// 检测四向方块
 			for (int i = -1; i < 1; i++)
 				for (int j = -1; j < 1; j++)
 				{
-					Pair nearPair = cellBlones.First(x => x.Key.Position == cell.Position + new Vector2(i, j));
+					Pair nearPair = cellBlones.FirstOrDefault(x => x.Key == cell + new Vector2(i, j));
 
 					// 排除自己以及四角方块
-					if (Math.Abs(i) + Math.Abs(j) == 1 && nearPair.Key != cell)
+					if (Math.Abs(i) + Math.Abs(j) == 1 && nearPair.Key != cell && !nearPair.Equals(default))
 					{
 						// 判断是否为边界
 						if (cellBlones[cell] != nearPair.Value)
 						{
 							isBoundary = true;
-							neighborVector2I = nearPair.Key;
+							neighbor = nearPair.Key;
 						}
 					}
 				}
@@ -274,11 +310,19 @@ public partial class MapCreater : Node2D
 			{
 				// 候选结果: 山脉,火山,裂谷,洋中脊
 				// 将自己的板块与对面板块的比较
-				int cellState = oceanStatus[cellBlones[cell]] ? 0 : 1;
-				int neighborVector2IState = oceanStatus[cellBlones[neighborVector2I]] ? 0 : 1;
+				int cellState = oceanStatus[cell] ? 0 : 1;
+				int neighborState = oceanStatus[neighbor] ? 0 : 1;
 				// 碰撞返回➕,否则返回➖
-				int moveState = isCollision(cellBlones, moveDirections, cell, neighborVector2I) ? cellState + neighborVector2IState : cellState - neighborVector2IState;
+				int moveState = isCollision(cellBlones, moveDirections, cell, neighbor) ? cellState + neighborState : cellState - neighborState;
 
+				// R 1 + 1 = 2 山脉
+				// R 1 + 0 = 1 火山
+				// R 1 - 1 = 0 裂谷
+				// ? 1 - 0 = 1 -> 火山
+				// _ 0 + 0 = 0 岛弧 & 海沟
+				// ? 0 + 1 = 1 -> 火山
+				// R 0 - 0 = 0 洋中脊
+				// ? 0 - 1 = -1 -> null
 				switch (moveState)
 				{
 					case 0:
@@ -288,13 +332,12 @@ public partial class MapCreater : Node2D
 							SetMidOceanRidge(cell); // 调用洋中脊设置方法
 						break;
 					case 1:
-						SetVolcano(cell); // 调用火山设置方法
+						SetVolcano(cell, topographyDic, cellHeight, topographyMap, oceanStatus); // 调用火山设置方法
 						break;
 					case 2:
-						SetMountainRange(cell, topographyDic, cellHeight); // 调用山脉设置方法
+						SetMountainRange(cell, topographyDic, cellHeight, topographyMap); // 调用山脉设置方法
 						break;
 					default:
-						GD.Print("结果错误");
 						break;
 				}
 			}
@@ -306,45 +349,7 @@ public partial class MapCreater : Node2D
 		}
 	}
 
-	private void SetMountainRange(Vector2I cell, Dictionary<Vector2I, Topography> topographyDic, Dictionary<Vector2I, int> cellHeight)
-	{
-		// 山脉的设置逻辑
-		// 更新字典
-		// 放置山的icon
-
-	}
-
-	private void SetVolcano(Vector2I cell)
-	{
-		// 火山的设置逻辑
-	}
-
-	private void SetRiftValley(Vector2I cell)
-	{
-		// 裂谷的设置逻辑
-	}
-
-	private void SetMidOceanRidge(Vector2I cell)
-	{
-		// 洋中脊的设置逻辑
-	}
-
-	private void SetIslandArc(Vector2I cell)
-	{
-		// 岛弧的设置逻辑
-	}
-
-	private void SetBasin(Vector2I cell)
-	{
-		// 盆地的设置逻辑
-	}
-
-	private void SetAbyssalPlain(Vector2I cell)
-	{
-		// 海盆的设置逻辑
-	}
-
-	private bool isCollision(Dictionary<Vector2I, Node2D> cellBlones, Dictionary<Node2D, Vector2> moveDirections, Vector2I A, Vector2I B)
+	private bool isCollision(Dictionary<Vector2I, Vector2> cellBlones, Dictionary<Vector2, Vector2> moveDirections, Vector2I A, Vector2I B)
 	{
 		// 获取A和B的移动方向向量
 		Vector2 directionA = moveDirections[cellBlones[A]];
@@ -369,6 +374,134 @@ public partial class MapCreater : Node2D
 			return determinantSign > 0 ? true : false;
 		}
 		return false;
-	}*/
+	}
+
+	private void SetMountainRange(Vector2I cell, Dictionary<Vector2I, Topography> topographyDic, Dictionary<Vector2I, int> cellHeight, TileMapLayer topographyMap)
+	{
+		// 山脉的设置逻辑
+		bool isAvailable = true;
+		Random rand = new Random();
+		int count = 0;
+		int max = rand.Next(5, 8);
+
+		for (int i = -10; i < 10; i++)
+		{
+			for (int j = -10; j < 10; j++)
+			{
+				if (topographyDic.ContainsKey(cell + new Vector2I(i, j)) && topographyDic[cell + new Vector2I(i, j)].Equals(Topography.MountainRange))
+				{
+					count++;
+				}
+			}
+		}
+
+		if (count >= max )
+		{
+			isAvailable = false;
+		}
+		
+		if (isAvailable)
+		{
+			// 更新字典
+			if (!topographyDic.ContainsKey(cell))
+			{
+				topographyDic.Add(cell, Topography.MountainRange);
+			}
+			else
+			{
+				topographyDic[cell] = Topography.MountainRange; // 更新现有值
+			}
+	
+			if (!cellHeight.ContainsKey(cell))
+			{
+				cellHeight.Add(cell, 2);
+			}
+			else
+			{
+				cellHeight[cell] = 2; // 更新现有值
+			}
+	
+			// 放置山的icon
+			topographyMap.SetCell(cell, (int)Topography.MountainRange, new Vector2I(0, 0));
+		}
+	}
+
+	private void SetVolcano(Vector2I cell, Dictionary<Vector2I, Topography> topographyDic, Dictionary<Vector2I, int> cellHeight, TileMapLayer topographyMap, Dictionary<Vector2, bool> oceanStatus)
+	{
+		// 火山的设置逻辑
+		bool isAvailable = true;
+		int range = 15;
+
+		for (int i = -10; i < range; i++)
+		{
+			for (int j = -10; j < range; j++)
+			{
+				if (topographyDic.ContainsKey(cell + new Vector2I(i, j)) || oceanStatus[cell])
+				{
+					isAvailable = false;
+					break;
+				}
+			}
+
+			if (!isAvailable)
+			{
+				break;
+			}
+		}
+
+		if (isAvailable)
+		{
+			// 更新字典
+			if (!topographyDic.ContainsKey(cell))
+			{
+				topographyDic.Add(cell, Topography.Volcano);
+			}
+			else
+			{
+				topographyDic[cell] = Topography.Volcano; // 更新现有值
+			}
+
+			if (!cellHeight.ContainsKey(cell))
+			{
+				cellHeight.Add(cell, 2);
+			}
+			else
+			{
+				cellHeight[cell] = 2; // 更新现有值
+			}
+
+			topographyMap.SetCell(cell, (int)Topography.Volcano, new Vector2I(0, 0));
+		}
+	}
+
+	private void SetRiftValley(Vector2I cell)
+	{
+		// 裂谷的设置逻辑
+		GD.Print("生成裂谷");
+	}
+
+	private void SetMidOceanRidge(Vector2I cell)
+	{
+		// 洋中脊的设置逻辑
+		GD.Print("生成洋中脊");
+	}
+
+	private void SetIslandArc(Vector2I cell)
+	{
+		// 岛弧的设置逻辑
+		GD.Print("生成岛弧");
+	}
+
+	private void SetBasin(Vector2I cell)
+	{
+		// 盆地的设置逻辑
+		GD.Print("生成盆地");
+	}
+
+	private void SetAbyssalPlain(Vector2I cell)
+	{
+		// 海盆的设置逻辑
+		GD.Print("生成海盆");
+	}
 
 }

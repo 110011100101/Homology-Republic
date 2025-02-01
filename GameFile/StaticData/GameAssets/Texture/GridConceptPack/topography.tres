@@ -1,0 +1,33 @@
+[gd_resource type="TileSet" load_steps=9 format=3 uid="uid://c0qw4boyqjao6"]
+
+[ext_resource type="Texture2D" uid="uid://djk6p23hiipxw" path="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/topography/MountainRange.png" id="1_r5mmn"]
+[ext_resource type="Texture2D" uid="uid://bpdbka4fpij2w" path="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/topography/Volcano.jpg" id="2_4ud82"]
+[ext_resource type="Texture2D" uid="uid://xj7n4rnikttk" path="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/topography/RiftValley.jpg" id="3_ylcbh"]
+[ext_resource type="Texture2D" uid="uid://bwflgdcspuw4r" path="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/topography/MidOceanRidge.png" id="4_meeoh"]
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4r7wu"]
+texture = ExtResource("1_r5mmn")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4ndxx"]
+texture = ExtResource("2_4ud82")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_7as1r"]
+texture = ExtResource("3_ylcbh")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_uxyji"]
+texture = ExtResource("4_meeoh")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+
+[resource]
+tile_size = Vector2i(64, 64)
+sources/0 = SubResource("TileSetAtlasSource_4r7wu")
+sources/1 = SubResource("TileSetAtlasSource_4ndxx")
+sources/2 = SubResource("TileSetAtlasSource_7as1r")
+sources/3 = SubResource("TileSetAtlasSource_uxyji")
