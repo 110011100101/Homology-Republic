@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://xj7n4rnikttk"
-path="res://.godot/imported/RiftValley.jpg-06fb66ac15740698be4e3ff3fe1c6a1f.ctex"
+uid="uid://dhiuc2grxcvi3"
+path="res://.godot/imported/RiftValley.png-cbfad6bd584959b8de1ddb33e17dd7f9.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/topography/RiftValley.jpg"
-dest_files=["res://.godot/imported/RiftValley.jpg-06fb66ac15740698be4e3ff3fe1c6a1f.ctex"]
+source_file="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/topography/RiftValley.png"
+dest_files=["res://.godot/imported/RiftValley.png-cbfad6bd584959b8de1ddb33e17dd7f9.ctex"]
 
 [params]
 
@@ -31,4 +31,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=64
-detect_3d/compress_to=0
+detect_3d/compress_to=1

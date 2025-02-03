@@ -1,6 +1,5 @@
 public enum Topography
 {
-    Null = -1,
     MountainRange,      // 山脉
     Volcano,            // 火山
     RiftValley,         // 裂谷
