@@ -13,12 +13,13 @@ region = Rect2(38, 1666, 248, 280)
 texture_filter = 1
 
 [node name="BackGround" type="Sprite2D" parent="."]
-scale = Vector2(7, 7)
+scale = Vector2(11, 11)
 texture = SubResource("AtlasTexture_n13cy")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 
 [node name="Group" type="Node2D" parent="."]
+scale = Vector2(1.5, 1.5)
 script = ExtResource("2_wbh56")
 
 [node name="Logo" type="Sprite2D" parent="Group"]

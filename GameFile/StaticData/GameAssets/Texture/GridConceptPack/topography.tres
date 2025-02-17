@@ -1,9 +1,10 @@
-[gd_resource type="TileSet" load_steps=9 format=3 uid="uid://c0qw4boyqjao6"]
+[gd_resource type="TileSet" load_steps=11 format=3 uid="uid://c0qw4boyqjao6"]
 
 [ext_resource type="Texture2D" uid="uid://djk6p23hiipxw" path="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/topography/MountainRange.png" id="1_r5mmn"]
 [ext_resource type="Texture2D" uid="uid://bpdbka4fpij2w" path="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/topography/Volcano.jpg" id="2_4ud82"]
 [ext_resource type="Texture2D" uid="uid://dhiuc2grxcvi3" path="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/topography/RiftValley.png" id="3_4ud82"]
 [ext_resource type="Texture2D" uid="uid://bwflgdcspuw4r" path="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/topography/MidOceanRidge.png" id="4_meeoh"]
+[ext_resource type="Texture2D" uid="uid://bfu05wf67lsdf" path="res://GameFile/StaticData/GameAssets/Texture/GridConceptPack/tiles/FeaturePoint.png" id="5_ylcbh"]
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_4r7wu"]
 texture = ExtResource("1_r5mmn")
@@ -25,9 +26,15 @@ texture = ExtResource("4_meeoh")
 texture_region_size = Vector2i(64, 64)
 0:0/0 = 0
 
+[sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_meeoh"]
+texture = ExtResource("5_ylcbh")
+texture_region_size = Vector2i(64, 64)
+0:0/0 = 0
+
 [resource]
 tile_size = Vector2i(64, 64)
 sources/0 = SubResource("TileSetAtlasSource_4r7wu")
 sources/1 = SubResource("TileSetAtlasSource_4ndxx")
 sources/3 = SubResource("TileSetAtlasSource_uxyji")
 sources/2 = SubResource("TileSetAtlasSource_ylcbh")
+sources/4 = SubResource("TileSetAtlasSource_meeoh")

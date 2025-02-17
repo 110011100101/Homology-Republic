@@ -50427,13 +50427,13 @@ animations = [{
 bg_color = Color(0, 0, 0, 1)
 
 [node name="CreatePlanetMenu" type="Node2D"]
-scale = Vector2(0.5, 0.5)
 
 [node name="BackGround" type="Sprite2D" parent="."]
 scale = Vector2(3, 3)
 texture = ExtResource("1_j7h6n")
 
 [node name="Camera2D" type="Camera2D" parent="."]
+zoom = Vector2(0.5, 0.5)
 
 [node name="PlanetAnimation" type="AnimatedSprite2D" parent="."]
 texture_filter = 1
@@ -50667,7 +50667,7 @@ offset_right = 270.0
 offset_bottom = 29.0
 min_value = 1.0
 max_value = 40.0
-value = 23.0
+value = 20.0
 update_on_text_changed = true
 select_all_on_focus = true
 script = ExtResource("14_6mm6e")

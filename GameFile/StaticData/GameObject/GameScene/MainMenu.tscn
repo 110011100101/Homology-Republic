@@ -18,16 +18,18 @@ texture_filter = 1
 [node name="BackGroundGroup" type="Node2D" parent="."]
 
 [node name="BackGround" type="Sprite2D" parent="BackGroundGroup"]
-position = Vector2(267, 0)
+position = Vector2(500, 0)
+scale = Vector2(1.6, 1.6)
 texture = ExtResource("1_ssf4v")
 
 [node name="CharacterBackGround" type="Sprite2D" parent="BackGroundGroup"]
-position = Vector2(-286, 0)
+position = Vector2(-500, 0)
+scale = Vector2(1.6, 1.6)
 texture = ExtResource("2_yklr5")
 
 [node name="按钮编组" type="Node2D" parent="."]
 position = Vector2(52, 3)
-scale = Vector2(3, 3)
+scale = Vector2(5, 5)
 metadata/_edit_group_ = true
 
 [node name="继续游戏" type="TextureButton" parent="按钮编组"]

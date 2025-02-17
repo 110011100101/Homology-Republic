@@ -22,8 +22,10 @@ Music="*res://Music.cs"
 
 [display]
 
-window/size/viewport_width=1440
-window/size/viewport_height=900
+window/size/viewport_width=2560
+window/size/viewport_height=1600
+window/size/mode=4
+window/size/resizable=false
 window/stretch/mode="viewport"
 window/vsync/vsync_mode=0
 window/max_fps=165
